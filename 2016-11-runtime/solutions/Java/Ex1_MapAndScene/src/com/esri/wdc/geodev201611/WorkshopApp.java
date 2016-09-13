@@ -16,10 +16,10 @@ import javafx.stage.Stage;
 
 public class WorkshopApp extends Application {
     
+    // Exercise 1: Declare fields, including UI components
     private ArcGISMap arcGisMap;
     private ArcGISScene arcGisScene;
     private boolean threeD = false;
-    
     private MapView mapView;
     private SceneView sceneView;
     private final ImageView imageView_2d = new ImageView(new Image(getClass().getResourceAsStream("/resources/two-d.png")));
@@ -29,12 +29,13 @@ public class WorkshopApp extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        // Set up the 2D map, since we will display that first.
+        // Exercise 1: Set up the 2D map, since we will display that first
         arcGisMap = new ArcGISMap();
         arcGisMap.setBasemap(Basemap.createNationalGeographic());
         mapView = new MapView();
         mapView.setMap(arcGisMap);
         
+        // Exercise 1: Place the MapView and 2D/3D toggle button in the UI
         AnchorPane.setLeftAnchor(mapView, 0.0);
         AnchorPane.setRightAnchor(mapView, 0.0);
         AnchorPane.setTopAnchor(mapView, 0.0);
@@ -43,6 +44,7 @@ public class WorkshopApp extends Application {
         AnchorPane.setBottomAnchor(button_toggle2d3d, 15.0);
         anchorPane.getChildren().addAll(mapView, button_toggle2d3d);
 
+        // Exercise 1: Set the 2D/3D toggle button's action
         button_toggle2d3d.setOnAction((ActionEvent event) -> {
             button_toggle2d3d_onAction();
         });
@@ -56,6 +58,9 @@ public class WorkshopApp extends Application {
         primaryStage.show();        
     }
     
+    /**
+     * Exercise 1: Toggle between 2D map and 3D scene
+     */
     private void button_toggle2d3d_onAction() {
         threeD = !threeD;
         button_toggle2d3d.setGraphic(threeD ? imageView_2d : imageView_3d);
@@ -83,6 +88,7 @@ public class WorkshopApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        // Exercise 1: dispose the MapView and SceneView before exiting
         mapView.dispose();
         if (null != sceneView) {
             sceneView.dispose();
