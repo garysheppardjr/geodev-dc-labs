@@ -1,15 +1,19 @@
 package com.esri.wdc.geodev201611;
 
 import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.layers.Layer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.mobilemappackage.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Camera;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.SceneView;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
@@ -21,6 +25,7 @@ import javafx.stage.Stage;
 
 public class WorkshopApp extends Application {
     
+    private static final String MMPK_PATH = "../../../data/DC_Crime_Data.mmpk";
     private static final String ELEVATION_IMAGE_SERVICE = 
             "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
     
@@ -53,6 +58,21 @@ public class WorkshopApp extends Application {
         map.setBasemap(Basemap.createNationalGeographic());
         mapView = new MapView();
         mapView.setMap(map);
+        
+        /**
+         * Exercise 3: Open a mobile map package (.mmpk) and
+         * add its operational layers to the map
+         */
+        final MobileMapPackage mmpk = new MobileMapPackage(MMPK_PATH);
+        mmpk.addDoneLoadingListener(() -> {
+            List<ArcGISMap> maps = mmpk.getMaps();
+            if (0 < maps.size()) {
+                map = maps.get(0);
+                mapView.setMap(map);
+            }
+            map.setBasemap(Basemap.createNationalGeographic());
+        });
+        mmpk.loadAsync();
         
         // Exercise 1: Place the MapView and 2D/3D toggle button in the UI
         AnchorPane.setLeftAnchor(mapView, 0.0);
@@ -105,6 +125,34 @@ public class WorkshopApp extends Application {
                 Surface surface = new Surface();
                 surface.getElevationSources().add(new ArcGISTiledElevationSource(ELEVATION_IMAGE_SERVICE));
                 scene.setBaseSurface(surface);
+                
+                /**
+                 * Exercise 3: Open a mobile map package (.mmpk) and
+                 * add its operational layers to the scene
+                 */
+                scene.addDoneLoadingListener(() -> {
+                    final MobileMapPackage mmpk = new MobileMapPackage(MMPK_PATH);
+                    mmpk.addDoneLoadingListener(() -> {
+                        List<ArcGISMap> maps = mmpk.getMaps();
+                        if (0 < maps.size()) {
+                            final ArcGISMap thisMap = maps.get(0);
+                            ArrayList<Layer> layers = new ArrayList<>();
+                            layers.addAll(thisMap.getOperationalLayers());
+                            thisMap.getOperationalLayers().clear();
+                            layers.stream().forEach((layer) -> {
+                                scene.getOperationalLayers().add(layer);
+                            });
+                            sceneView.setViewpoint(thisMap.getInitialViewpoint());
+                            // Rotate the camera
+                            Viewpoint viewpoint = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE);
+                            Point targetPoint = (Point) viewpoint.getTargetGeometry();
+                            Camera camera = sceneView.getCurrentViewpointCamera()
+                                    .rotateAround(targetPoint, 45.0, 65.0, 0.0);
+                            sceneView.setViewpointCameraAsync(camera);
+                        }
+                    });
+                    mmpk.loadAsync();
+                });
                 
                 sceneView = new SceneView();
                 sceneView.setArcGISScene(scene);
