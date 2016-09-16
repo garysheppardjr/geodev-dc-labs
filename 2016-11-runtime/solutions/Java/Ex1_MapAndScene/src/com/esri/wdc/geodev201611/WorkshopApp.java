@@ -2,7 +2,9 @@ package com.esri.wdc.geodev201611;
 
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
+import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.SceneView;
 import javafx.application.Application;
@@ -15,6 +17,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 public class WorkshopApp extends Application {
+    
+    private static final String ELEVATION_IMAGE_SERVICE = 
+            "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
     
     // Exercise 1: Declare fields, including UI components
     private ArcGISMap map;
@@ -70,8 +75,13 @@ public class WorkshopApp extends Application {
             if (null == sceneView) {
                 // Set up the 3D scene. This only happens the first time the user switches to 3D.
                 scene = new ArcGISScene();
-                scene.setBasemap(Basemap.createNationalGeographic());
-                scene.getOperationalLayers().addAll(map.getOperationalLayers());
+                scene.setBasemap(Basemap.createImagery());
+                
+                // Add elevation surface
+                Surface surface = new Surface();
+                surface.getElevationSources().add(new ArcGISTiledElevationSource(ELEVATION_IMAGE_SERVICE));
+                scene.setBaseSurface(surface);
+                
                 sceneView = new SceneView();
                 sceneView.setArcGISScene(scene);
                 AnchorPane.setLeftAnchor(sceneView, 0.0);
