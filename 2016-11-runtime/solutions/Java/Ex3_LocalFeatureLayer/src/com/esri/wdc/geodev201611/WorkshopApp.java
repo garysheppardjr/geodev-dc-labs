@@ -15,7 +15,6 @@ import com.esri.arcgisruntime.mapping.view.SceneView;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -25,9 +24,12 @@ import javafx.stage.Stage;
 
 public class WorkshopApp extends Application {
     
-    private static final String MMPK_PATH = "../../../data/DC_Crime_Data.mmpk";
+    // Exercise 1: Specify elevation service URL
     private static final String ELEVATION_IMAGE_SERVICE = 
             "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+
+    // Exercise 3: Specify mobile map package path
+    private static final String MMPK_PATH = "../../../data/DC_Crime_Data.mmpk";
     
     // Exercise 1: Declare fields, including UI components
     private ArcGISMap map;
@@ -49,9 +51,7 @@ public class WorkshopApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Exercise 1: Set the 2D/3D toggle button's action
-        button_toggle2d3d.setOnAction((ActionEvent event) -> {
-            button_toggle2d3d_onAction();
-        });
+        button_toggle2d3d.setOnAction(event -> button_toggle2d3d_onAction());
         
         // Exercise 1: Set up the 2D map, since we will display that first
         map = new ArcGISMap();
@@ -91,12 +91,8 @@ public class WorkshopApp extends Application {
         anchorPane.getChildren().addAll(button_zoomOut, button_zoomIn);
         
         // Exercise 2: Set the zoom buttons' actions
-        button_zoomIn.setOnAction((ActionEvent event) -> {
-            button_zoomIn_onAction();
-        });
-        button_zoomOut.setOnAction((ActionEvent event) -> {
-            button_zoomOut_onAction();
-        });
+        button_zoomIn.setOnAction(event -> button_zoomIn_onAction());
+        button_zoomOut.setOnAction(event -> button_zoomOut_onAction());
         
         // Exercise 1: Finish displaying the UI
         // JavaFX Scene (unrelated to ArcGIS 3D scene)

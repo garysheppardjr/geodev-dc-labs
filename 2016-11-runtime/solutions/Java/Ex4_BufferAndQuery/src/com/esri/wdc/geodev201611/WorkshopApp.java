@@ -30,7 +30,6 @@ import com.esri.arcgisruntime.util.ListenableList;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -45,9 +44,12 @@ import javafx.stage.Stage;
 
 public class WorkshopApp extends Application {
     
-    private static final String MMPK_PATH = "../../../data/DC_Crime_Data.mmpk";
+    // Exercise 1: Specify elevation service URL
     private static final String ELEVATION_IMAGE_SERVICE = 
             "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+
+    // Exercise 3: Specify mobile map package path
+    private static final String MMPK_PATH = "../../../data/DC_Crime_Data.mmpk";
     
     // Exercise 4: Set up LinearUnit object for unit conversion
     private static final LinearUnit UNIT_METERS = new LinearUnit(LinearUnitId.METERS);
@@ -122,9 +124,7 @@ public class WorkshopApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Exercise 1: Set the 2D/3D toggle button's action
-        button_toggle2d3d.setOnAction((ActionEvent event) -> {
-            button_toggle2d3d_onAction();
-        });
+        button_toggle2d3d.setOnAction(event -> button_toggle2d3d_onAction());
         
         // Exercise 1: Set up the 2D map, since we will display that first
         map = new ArcGISMap();
