@@ -1,5 +1,6 @@
 package com.esri.wdc.geodev201611;
 
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.datasource.QueryParameters;
 import com.esri.arcgisruntime.geometry.Geometry;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
@@ -22,12 +23,18 @@ import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LayerSceneProperties.SurfacePlacement;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.SceneView;
+import com.esri.arcgisruntime.security.UserCredential;
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
+import com.esri.arcgisruntime.tasks.route.RouteParameters;
+import com.esri.arcgisruntime.tasks.route.RouteResult;
+import com.esri.arcgisruntime.tasks.route.RouteTask;
+import com.esri.arcgisruntime.tasks.route.Stop;
 import com.esri.arcgisruntime.util.ListenableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -61,6 +68,14 @@ public class WorkshopApp extends Application {
             new SimpleFillSymbol(SimpleFillSymbol.Style.NULL, 0xFFFFFFFF,
                     new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, 0xFFFFA500, 3));
     
+    // Exercise 5: Create symbols for routing
+    private static final SimpleMarkerSymbol ROUTE_ORIGIN_SYMBOL =
+            new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, 0xC000FF00, 10);
+    private static final SimpleMarkerSymbol ROUTE_DESTINATION_SYMBOL =
+            new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.SQUARE, 0xC0FF0000, 10);
+    private static final SimpleLineSymbol ROUTE_LINE_SYMBOL =
+            new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, 0xC0550055, 5);
+    
     // Exercise 1: Declare and instantiate fields, including UI components
     private final MapView mapView = new MapView();
     private final SceneView sceneView = new SceneView();
@@ -87,9 +102,21 @@ public class WorkshopApp extends Application {
             new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/location.png")));
     private final ToggleButton toggleButton_bufferAndQuery = new ToggleButton(null, imageView_location);
     
+    // Exercise 5: Declare UI component for routing button
+    private final ImageView imageView_routing =
+            new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/routing.png")));
+    private final ToggleButton toggleButton_routing = new ToggleButton(null, imageView_routing);
+    
     // Exercise 4: Declare buffer and query fields
     private final GraphicsOverlay bufferAndQueryMapGraphics = new GraphicsOverlay();
     private final GraphicsOverlay bufferAndQuerySceneGraphics = new GraphicsOverlay();
+    
+    // Exercise 5: Declare routing fields
+    private final RouteTask routeTask;
+    private final RouteParameters routeParameters;
+    private final GraphicsOverlay mapRouteGraphics = new GraphicsOverlay();
+    private final GraphicsOverlay sceneRouteGraphics = new GraphicsOverlay();
+    private Point originPoint = null;
     
     /**
      * Default constructor for class.
@@ -133,6 +160,43 @@ public class WorkshopApp extends Application {
         // Exercise 4: Add a GraphicsOverlay for the click and buffer
         bufferAndQuerySceneGraphics.getSceneProperties().setSurfacePlacement(SurfacePlacement.DRAPED);
         sceneView.getGraphicsOverlays().add(bufferAndQuerySceneGraphics);
+                
+        // Exercise 5: Set the routing toggle button's action
+        toggleButton_routing.setOnAction(event -> toggleButton_routing_onAction());
+        
+        /**
+         * Exercise 5: Set up routing objects
+         */
+        mapView.getGraphicsOverlays().add(mapRouteGraphics);
+        sceneRouteGraphics.getSceneProperties().setSurfacePlacement(SurfacePlacement.DRAPED);
+        sceneView.getGraphicsOverlays().add(sceneRouteGraphics);
+        RouteTask theRouteTask = new RouteTask("http://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World");        
+        /**
+         * Note: for ArcGIS Online routing, this tutorial uses a username and password
+         * in the source code for simplicity. For security reasons, you would not
+         * do it this way in a real app. Instead, you would do one of the following:
+         * - Use an OAuth 2.0 user login
+         * - Use an OAuth 2.0 app login (not directly supported in ArcGIS Runtime Quartz as of Beta 2)
+         * - Challenge the user for credentials
+         */
+        // Don't share this code without removing plain text username and password!!!
+        theRouteTask.setCredential(new UserCredential("myUsername", "myPassword"));
+        RouteParameters theRouteParameters = null;
+        try {
+            theRouteParameters = theRouteTask.generateDefaultParametersAsync().get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(WorkshopApp.class.getName()).log(Level.SEVERE, null, ex);
+            theRouteTask = null;
+        }
+        routeTask = theRouteTask;
+        routeParameters = theRouteParameters;
+        if (null != routeParameters) {
+            routeParameters.setReturnDirections(false);
+            routeParameters.setReturnRoutes(true);
+            routeParameters.setReturnStops(false);
+        } else {
+            toggleButton_routing.setDisable(true);
+        }
     }
     
     @Override
@@ -157,6 +221,11 @@ public class WorkshopApp extends Application {
         AnchorPane.setRightAnchor(toggleButton_bufferAndQuery, 90.0);
         AnchorPane.setBottomAnchor(toggleButton_bufferAndQuery, 15.0);
         anchorPane.getChildren().add(toggleButton_bufferAndQuery);
+        
+        // Exercise 5: Place the routing button in the UI
+        AnchorPane.setRightAnchor(toggleButton_routing, 90.0);
+        AnchorPane.setBottomAnchor(toggleButton_routing, 80.0);
+        anchorPane.getChildren().add(toggleButton_routing);
         
         // Exercise 1: Finish displaying the UI
         // JavaFX Scene (unrelated to ArcGIS 3D scene)
@@ -186,6 +255,9 @@ public class WorkshopApp extends Application {
         threeD = !threeD;
         button_toggle2d3d.setGraphic(threeD ? imageView_2d : imageView_3d);
         
+        // Exercise 5: Set originPoint to null to reset routing when switching between 2D and 3D
+        originPoint = null;
+
         // Exercise 1: Switch between 2D map and 3D scene
         if (threeD) {
             if (null == scene) {
@@ -236,6 +308,14 @@ public class WorkshopApp extends Application {
                  */
                 if (toggleButton_bufferAndQuery.isSelected()) {
                     sceneView.setOnMouseClicked(event -> bufferAndQuery(event));
+                }
+
+                /**
+                 * Exercise 5: The routing toggle button might already
+                 * be selected. If so, we need to set the SceneView's event handler.
+                 */
+                if (toggleButton_routing.isSelected()) {
+                    sceneView.setOnMouseClicked(event -> addStopToRoute(event));
                 }
             }
             anchorPane.getChildren().remove(mapView);
@@ -306,6 +386,10 @@ public class WorkshopApp extends Application {
             if (null != sceneView) {
                 sceneView.setOnMouseClicked(mouseEvent -> bufferAndQuery(mouseEvent));
             }
+
+            // Exercise 5: Unselect the routing button
+            toggleButton_routing.setSelected(false);
+
         } else {
             mapView.setOnMouseClicked(null);
             if (null != sceneView) {
@@ -362,6 +446,67 @@ public class WorkshopApp extends Application {
                  */
                 ((FeatureLayer) layer).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
             });
+        }
+    };
+    
+    /**
+     * Exercise 5: Activate routing
+     */
+    private void toggleButton_routing_onAction() {
+        if (toggleButton_routing.isSelected()) {
+            mapView.setOnMouseClicked(mouseEvent -> addStopToRoute(mouseEvent));
+            if (null != sceneView) {
+                sceneView.setOnMouseClicked(mouseEvent -> addStopToRoute(mouseEvent));
+            }
+            toggleButton_bufferAndQuery.setSelected(false);
+        } else {
+            mapView.setOnMouseClicked(null);
+            if (null != sceneView) {
+                sceneView.setOnMouseClicked(null);
+            }
+        }
+        originPoint = null;
+    }
+    
+    /**
+     * Exercise 5: Add a stop to the route, and calculate the route if we have two stops.
+     */
+    private void addStopToRoute(MouseEvent event) {
+        if (null != routeTask && MouseButton.PRIMARY.equals(event.getButton()) && event.isStillSincePress()) {
+            ListenableList<Graphic> graphics = (threeD ? sceneRouteGraphics : mapRouteGraphics).getGraphics();
+            if (null == originPoint) {
+                originPoint = getGeoPoint(event);
+                if (originPoint.hasZ()) {
+                    originPoint = new Point(originPoint.getX(), originPoint.getY(), originPoint.getSpatialReference());
+                }
+                graphics.clear();
+                graphics.add(new Graphic(originPoint, ROUTE_ORIGIN_SYMBOL));
+            } else {
+                Point destinationPoint = getGeoPoint(event);
+                if (destinationPoint.hasZ()) {
+                    destinationPoint = new Point(destinationPoint.getX(), destinationPoint.getY(), destinationPoint.getSpatialReference());
+                }
+                graphics.add(new Graphic(destinationPoint, ROUTE_DESTINATION_SYMBOL));
+                routeParameters.getStops().clear();
+                for (Point p : new Point[]{ originPoint, destinationPoint }) {
+                    routeParameters.getStops().add(new Stop(p));
+                }
+                if (null != routeTask) {
+                    ListenableFuture<RouteResult> solveFuture = routeTask.solveAsync(routeParameters);
+                    solveFuture.addDoneListener(() -> {
+                        try {
+                            RouteResult routeResult = solveFuture.get();
+                            if (0 < routeResult.getRoutes().size()) {
+                                graphics.add(new Graphic(routeResult.getRoutes().get(0).getRouteGeometry(), ROUTE_LINE_SYMBOL));
+                            }
+                        } catch (ExecutionException | InterruptedException e) {
+                            Logger.getLogger(WorkshopApp.class.getName()).log(Level.SEVERE, null, e);
+                        }
+                    });
+                }
+                // After running route...
+                originPoint = null;
+            }
         }
     };
 
