@@ -166,15 +166,16 @@ public class WorkshopApp extends Application {
         });
         mmpk.loadAsync();
 
-        // Exercise 4: Add a GraphicsOverlay for the click and buffer
+        /**
+         * Exercise 4: Add a GraphicsOverlay to the map and the scene for the click
+         * and buffer
+         */
         mapView.getGraphicsOverlays().add(bufferAndQueryMapGraphics);
+        bufferAndQuerySceneGraphics.getSceneProperties().setSurfacePlacement(SurfacePlacement.DRAPED);
+        sceneView.getGraphicsOverlays().add(bufferAndQuerySceneGraphics);
         
         // Exercise 4: Set the buffer and query toggle button's action
         toggleButton_bufferAndQuery.setOnAction(event -> toggleButton_bufferAndQuery_onAction());
-        
-        // Exercise 4: Add a GraphicsOverlay for the click and buffer
-        bufferAndQuerySceneGraphics.getSceneProperties().setSurfacePlacement(SurfacePlacement.DRAPED);
-        sceneView.getGraphicsOverlays().add(bufferAndQuerySceneGraphics);
                 
         // Exercise 5: Set the routing toggle button's action
         toggleButton_routing.setOnAction(event -> toggleButton_routing_onAction());
@@ -316,14 +317,6 @@ public class WorkshopApp extends Application {
                 AnchorPane.setBottomAnchor(sceneView, 0.0);
                 
                 /**
-                 * Exercise 4: The buffer and query toggle button might already
-                 * be selected. If so, we need to set the SceneView's event handler.
-                 */
-                if (toggleButton_bufferAndQuery.isSelected()) {
-                    sceneView.setOnMouseClicked(event -> bufferAndQuery(event));
-                }
-
-                /**
                  * Exercise 5: The routing toggle button might already
                  * be selected. If so, we need to set the SceneView's event handler.
                  */
@@ -395,18 +388,14 @@ public class WorkshopApp extends Application {
     private void toggleButton_bufferAndQuery_onAction() {
         if (toggleButton_bufferAndQuery.isSelected()) {
             mapView.setOnMouseClicked(mouseEvent -> bufferAndQuery(mouseEvent));
-            if (null != sceneView) {
-                sceneView.setOnMouseClicked(mouseEvent -> bufferAndQuery(mouseEvent));
-            }
+            sceneView.setOnMouseClicked(mouseEvent -> bufferAndQuery(mouseEvent));
 
             // Exercise 5: Unselect the routing button
             toggleButton_routing.setSelected(false);
 
         } else {
             mapView.setOnMouseClicked(null);
-            if (null != sceneView) {
-                sceneView.setOnMouseClicked(null);
-            }
+            sceneView.setOnMouseClicked(null);
         }
     }
     
@@ -436,7 +425,9 @@ public class WorkshopApp extends Application {
             Polygon buffer = GeometryEngine.buffer(geoPoint, 1000.0);
 
             // Show click and buffer as graphics
-            ListenableList<Graphic> graphics = (threeD ? bufferAndQuerySceneGraphics : bufferAndQueryMapGraphics).getGraphics();
+            ListenableList<Graphic> graphics =
+                    (threeD ? bufferAndQuerySceneGraphics : bufferAndQueryMapGraphics)
+                            .getGraphics();
             graphics.clear();
             graphics.add(new Graphic(buffer, BUFFER_SYMBOL));
             graphics.add(new Graphic(geoPoint, CLICK_SYMBOL));
@@ -453,8 +444,8 @@ public class WorkshopApp extends Application {
                 /**
                  * Note: As of ArcGIS Runtime Quartz Beta 2, this select successfully
                  * selects features, but those features are only highlighted on the
-                 * 2D MapView, not on the 3D SceneView. This behavior has been reported
-                 * to the ArcGIS Runtime development team.
+                 * 2D MapView, not on the 3D SceneView. This behavior is scheduled
+                 * to be fixed in ArcGIS Runtime Quartz.
                  */
                 ((FeatureLayer) layer).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
             });
