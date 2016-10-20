@@ -477,21 +477,18 @@ public class WorkshopApp extends Application {
     private void addStopToRoute(MouseEvent event) {
         if (null != routeTask && MouseButton.PRIMARY.equals(event.getButton()) && event.isStillSincePress()) {
             ListenableList<Graphic> graphics = (threeD ? sceneRouteGraphics : mapRouteGraphics).getGraphics();
+            Point point = getGeoPoint(event);
+            if (point.hasZ()) {
+                point = new Point(point.getX(), point.getY(), point.getSpatialReference());
+            }
             if (null == originPoint) {
-                originPoint = getGeoPoint(event);
-                if (originPoint.hasZ()) {
-                    originPoint = new Point(originPoint.getX(), originPoint.getY(), originPoint.getSpatialReference());
-                }
+                originPoint = point;
                 graphics.clear();
                 graphics.add(new Graphic(originPoint, ROUTE_ORIGIN_SYMBOL));
             } else {
-                Point destinationPoint = getGeoPoint(event);
-                if (destinationPoint.hasZ()) {
-                    destinationPoint = new Point(destinationPoint.getX(), destinationPoint.getY(), destinationPoint.getSpatialReference());
-                }
-                graphics.add(new Graphic(destinationPoint, ROUTE_DESTINATION_SYMBOL));
+                graphics.add(new Graphic(point, ROUTE_DESTINATION_SYMBOL));
                 routeParameters.getStops().clear();
-                for (Point p : new Point[]{ originPoint, destinationPoint }) {
+                for (Point p : new Point[]{ originPoint, point }) {
                     routeParameters.getStops().add(new Stop(p));
                 }
                 if (null != routeTask) {
