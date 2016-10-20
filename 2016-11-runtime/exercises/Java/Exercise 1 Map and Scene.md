@@ -110,17 +110,16 @@ You have two options for adding ArcGIS Runtime Quartz to your Java application p
 
 ## Add a 2D map to the app
 
-1. Before your constructor, instantiate a `MapView` field, and declare an `ArcGISMap` field:
+1. Before your constructor, instantiate a `MapView` field and an `ArcGISMap` field:
 
     ```
     private final MapView mapView = new MapView();
-    private ArcGISMap map;
+    private ArcGISMap map = new ArcGISMap();
     ```
     
-1. In your constructor, instantiate the `ArcGISMap`, set its basemap, and set the `MapView`'s map:
+1. In your constructor, set the `ArcGISMap`'s basemap and set the `MapView`'s map:
 
     ```
-    map = new ArcGISMap();
     map.setBasemap(Basemap.createNationalGeographic());
     mapView.setMap(map);
     ```
@@ -162,11 +161,11 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
             "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
     ```
     
-1. Before your constructor, instantiate a `SceneView` field, declare an `ArcGISScene` field, and declare a `boolean` field to keep track of whether the app is currently displaying 3D or not:
+1. Before your constructor, declare a `SceneView` field and an `ArcGISScene` field. Set them to `null`; we don't want to instantiate them unless the user actually switches to 3D mode. Instantiate a `boolean` field to keep track of whether the app is currently displaying 3D or not:
 
     ```
-    private final SceneView sceneView = new SceneView();
-    private ArcGISScene scene;
+    private SceneView sceneView = null;
+    private ArcGISScene scene = null;
     private boolean threeD = false;
     ```
     
@@ -197,10 +196,10 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
     }
     ```
     
-1. If we're switching to 3D, and we have not been in 3D mode before during the current run of the app, we need to set up the 3D scene. We could have instantiated it in or before the constructor, but let's do it lazily here in the event handler so that we don't have to consume 3D resources if we never use 3D. If we're switching to 3D, and if `scene` is null, do the following:
+1. If we're switching to 3D, and we have not been in 3D mode before during the current run of the app, we need to set up the 3D scene. If `scene` is null, do the following:
     1. Instantiate `scene` as a new `ArcGISScene`.
     1. Set the `ArcGISScene`'s basemap and elevation surface.
-    1. Set the `SceneView`'s `ArcGISScene`.
+    1. Instantiate the `SceneView` and set its `ArcGISScene`.
     1. Use `AnchorPane` to set up the `SceneView` to fill the app.
     
     ```
@@ -211,6 +210,7 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
         Surface surface = new Surface();
         surface.getElevationSources().add(new ArcGISTiledElevationSource(ELEVATION_IMAGE_SERVICE));
         scene.setBaseSurface(surface);
+        sceneView = new SceneView();
         sceneView.setArcGISScene(scene);
         AnchorPane.setLeftAnchor(sceneView, 0.0);
         AnchorPane.setRightAnchor(sceneView, 0.0);
@@ -233,7 +233,7 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
     anchorPane.getChildren().add(0, mapView);
     ```
     
-1. In your `stop()` method, dispose of the `SceneView`, but only if it has been instantiated (i.e. check for null):
+1. In your `stop()` method, dispose of the `SceneView` if it is not null:
 
     ```
     if (null != sceneView) {
