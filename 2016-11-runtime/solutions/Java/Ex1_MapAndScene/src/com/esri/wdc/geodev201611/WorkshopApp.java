@@ -41,15 +41,15 @@ public class WorkshopApp extends Application {
 
     // Exercise 1: Declare and instantiate fields, including UI components
     private final MapView mapView = new MapView();
-    private final SceneView sceneView = new SceneView();
+    private ArcGISMap map = new ArcGISMap();
     private final ImageView imageView_2d =
             new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/two-d.png")));
     private final ImageView imageView_3d =
             new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/three-d.png")));
     private final Button button_toggle2d3d = new Button(null, imageView_3d);
     private final AnchorPane anchorPane = new AnchorPane();
-    private ArcGISMap map;
-    private ArcGISScene scene;
+    private SceneView sceneView = null;
+    private ArcGISScene scene = null;
     private boolean threeD = false;
     
     /**
@@ -59,7 +59,6 @@ public class WorkshopApp extends Application {
         super();
 
         // Exercise 1: Set up the 2D map, since we will display that first
-        map = new ArcGISMap();
         map.setBasemap(Basemap.createNationalGeographic());
         mapView.setMap(map);
 
@@ -115,6 +114,7 @@ public class WorkshopApp extends Application {
                 Surface surface = new Surface();
                 surface.getElevationSources().add(new ArcGISTiledElevationSource(ELEVATION_IMAGE_SERVICE));
                 scene.setBaseSurface(surface);
+                sceneView = new SceneView();
                 sceneView.setArcGISScene(scene);
                 AnchorPane.setLeftAnchor(sceneView, 0.0);
                 AnchorPane.setRightAnchor(sceneView, 0.0);
