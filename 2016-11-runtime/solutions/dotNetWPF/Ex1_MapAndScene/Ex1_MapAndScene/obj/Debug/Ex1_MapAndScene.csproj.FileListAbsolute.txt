@@ -1,0 +1,6 @@
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\Ex1_MapAndScene.csprojResolveAssemblyReference.cache
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\MainWindow.baml
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\MainWindow.g.cs
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\App.g.cs
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\Ex1_MapAndScene_MarkupCompile.cache
+C:\MyData\Development\GitHub\geodev-dc-labs\2016-11-runtime\solutions\dotNetWPF\Ex1_MapAndScene\Ex1_MapAndScene\obj\Debug\Ex1_MapAndScene.g.resources
