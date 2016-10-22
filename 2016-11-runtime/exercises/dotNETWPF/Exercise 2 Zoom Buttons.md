@@ -1,4 +1,4 @@
-# Exercise 2: Add Zoom In and Zoom Out Buttons (Java)
+# Exercise 2: Add Zoom In and Zoom Out Buttons (.NET C#)
 
 This exercise walks you through the following:
 - Add zoom in and zoom out buttons to the UI
@@ -7,7 +7,7 @@ This exercise walks you through the following:
 Prerequisites:
 - Complete [Exercise 1](Exercise 1 Map and Scene.md), or get the Exercise 1 code solution compiling and running properly, preferably in an IDE.
 
-If you need some help, you can refer to [the solution to this exercise](../../solutions/Java/Ex2_ZoomButtons), available in this repository.
+If you need some help, you can refer to [the solution to this exercise](../../solutions/dotNETWPF/Ex2_ZoomButtons), available in this repository.
 
 ## Add zoom in and zoom out buttons to the UI
 1. If desired, make a copy of your Exercise 1 class. Just make sure you're running your Exercise 2 code as you complete this exercise.
