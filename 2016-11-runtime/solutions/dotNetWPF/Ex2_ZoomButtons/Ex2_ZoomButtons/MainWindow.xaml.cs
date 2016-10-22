@@ -67,6 +67,43 @@ namespace Ex1_MapAndScene
                 mapView.Visibility = Visibility.Visible;
             }
         }
+        //Exercise 2
+        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            zoom(2);
+        }
+        //Exercise 2
+        private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            zoom(.5);
+        }
+        //Exercise 2
+        private void zoom(double factor)
+        {
+            if (threeD)
+            {
+                zoomScene(factor);
+            }
+            else
+            {
+                zoomMap(factor);
+            }
+        }
+        //Exercise 2
+        private void zoomScene(double factor)
+        {
+            Esri.ArcGISRuntime.Geometry.Geometry target = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale).TargetGeometry;
+            if (target.GeometryType == GeometryType.Point)
+            {
+                Camera camera = sceneView.Camera.ZoomToward((Esri.ArcGISRuntime.Geometry.MapPoint)target, factor);
+                sceneView.SetViewpointCameraAsync(camera, new TimeSpan(1000));
+            }
+        }
+        //Exercise 2
+        private void zoomMap(double factor)
+        {
+            mapView.SetViewpointScaleAsync(mapView.GetCurrentViewpoint(ViewpointType.CenterAndScale).Scale / factor);
+        }
     }
 }
 
