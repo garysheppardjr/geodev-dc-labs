@@ -48,7 +48,7 @@ If you need some help, you can refer to [the solution to this exercise](../../so
     ```
 4. Compile and run your app. Verify that a button appears in the lower-right corner of the app:
 
-    ![Blank app with button](01-blank-app-with-button.png)
+    ![Blank app with button](01-blank-app-with-button.PNG)
     
 5. Add using statements for the different namespaces that will be used throughout the exercises:
 
@@ -81,7 +81,7 @@ If you need some help, you can refer to [the solution to this exercise](../../so
     ```
 7. Compile and run your app. Verify that a map fills the window and that a button appears in the lower-right corner of the app on top of the map:
 
-    ![Map and button](02-map-and-button.png)
+    ![Map and button](02-map-and-button.PNG)
     
 ## Add a 3D scene to the app, and use a button to switch between 2D and 3D
 
@@ -173,7 +173,7 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
     
 16. Compile and run your app. Verify that clicking the button changes its image and also toggles between 2D and 3D:
     
-    ![Toggle to 3D](03-toggle-to-3d.png)
+    ![Toggle to 3D](03-toggle-to-3d.PNG)
     
 ## How did it go?
 
