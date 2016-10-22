@@ -98,7 +98,6 @@ The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D!
 
     ```
     private Scene myScene = null;
-    private static string ELEVATION_IMAGE_SERVICE = "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
     private bool threeD = false;
     ```
     
