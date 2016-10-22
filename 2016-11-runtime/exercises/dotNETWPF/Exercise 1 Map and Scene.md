@@ -26,6 +26,12 @@ If you need some help, you can refer to [the solution to this exercise](../../so
     <Window.Resources>
         <Image x:Key="3D" Source="images/three_d.png" Height="50" Width="50" />
         <Image x:Key="2D" Source="images/two_d.png" Height="50" Width="50"/>
+        <Image x:Key="ZoomIn" Source="images/zoom_in.png" Stretch="Fill"/>
+        <Image x:Key="ZoomOut" Source="images/zoom_out.png" Stretch="Fill"/>
+        <Image x:Key="Location" Source="images/location.png" Stretch="Fill"/>
+        <Image x:Key="LocationSelected" Source="images/location_selected.png" Stretch="Fill"/>
+        <Image x:Key="Routing" Source="images/routing.png" Stretch="Fill"/>
+        <Image x:Key="RoutingSelected" Source="images/routing_selected.png" Stretch="Fill"/>
     </Window.Resources>
     ```
 3. Now we modify the MainWindow.xaml to simplify the mapView and also add the button to toggle between 2D and 3D.  This session is focused on the ArcGIS Runtime so we will not spend anytimem on UI.  Replace the code between the &ltGrid> &ltGrid/> tags with the following code:
