@@ -10,46 +10,34 @@ Prerequisites:
 If you need some help, you can refer to [the solution to this exercise](../../solutions/dotNETWPF/Ex2_ZoomButtons), available in this repository.
 
 ## Add zoom in and zoom out buttons to the UI
-1. If desired, make a copy of your Exercise 1 class. Just make sure you're running your Exercise 2 code as you complete this exercise.
-1. In your class, before your constructor, instantiate two buttons: one for zooming in, and one for zooming out:
+1. If desired, make a copy of your Exercise 1 or continue to use the Exercise 1 solution. Just make sure you're running your Exercise 2 code as you complete this exercise.
+1. First let's create our two new buttons for zoom in and zoom out within the UI so go to MainWindow.xaml and add the following above the creation of the viewbutton from exercise 1:
 
     ```
-    private final ImageView imageView_zoomIn =
-            new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/zoom_in.png")));
-    private final ImageView imageView_zoomOut =
-            new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/zoom_out.png")));
-    private final Button button_zoomIn = new Button(null, imageView_zoomIn);
-    private final Button button_zoomOut = new Button(null, imageView_zoomOut);
-    ```
-    
-1. In your `start(Stage)` method, after adding the MapView and 2D/3D toggle button to the UI, add the zoom in and zoom out buttons to the UI, near the 2D/3D toggle button in the lower right corner:
+    <Button x:Name="ZoomInButton" Width="50" Height="50" Padding="1" HorizontalAlignment="Right" Margin="0,5,12.4,5" Content="{DynamicResource ZoomIn}"/>
+    <Button x:Name="ZoomOutButton" Width="50" Height="50" Padding="1" HorizontalAlignment="Right" RenderTransformOrigin="-0.919,0.469" Margin="0,5,12.4,5" Content="{DynamicResource ZoomOut}"/>
 
     ```
-    AnchorPane.setRightAnchor(button_zoomOut, 15.0);
-    AnchorPane.setBottomAnchor(button_zoomOut, 80.0);
-    AnchorPane.setRightAnchor(button_zoomIn, 15.0);
-    AnchorPane.setBottomAnchor(button_zoomIn, 145.0);
-    anchorPane.getChildren().addAll(button_zoomOut, button_zoomIn);
-    ```
-    
-1. Create `private void` event handler methods for the zoom in and zoom out buttons. Add a `System.out.println` to each event handler for now, just to verify that the buttons work:
+ 
+1. Create the click event for each button by typing click= and use tab to create the code in MainWindow.xaml.cs.  Your xaml will look like:
 
     ```
-    private void button_zoomIn_onAction() {
-        System.out.println("TODO zoom in!");
-    }
-    
-    private void button_zoomOut_onAction() {
-        System.out.println("TODO zoom out!");
-    }
-    ```
-    
-1. In your constructor, set the zoom buttons' `onAction` handlers to call the event handler methods you just created:
+    <Button x:Name="ZoomInButton" Click="ZoomInButton_Click"  Width="50" Height="50" Padding="1" HorizontalAlignment="Right" Margin="0,5,5,5" Content="{DynamicResource ZoomIn}"/>
+    <Button x:Name="ZoomOutButton" Click="ZoomOutButton_Click" Width="50" Height="50" Padding="1" HorizontalAlignment="Right" RenderTransformOrigin="-0.919,0.469" Margin="0,5,5,5" Content="{DynamicResource ZoomOut}"/>
 
     ```
-    button_zoomIn.setOnAction(event -> button_zoomIn_onAction());
-    button_zoomOut.setOnAction(event -> button_zoomOut_onAction());
-    ```
+    And the MainWindow.xaml.cs will have two new methods that look like:
+     ```
+     private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+      ```
     
 1. Compile and run your app. Verify that the zoom buttons display on top of the map, that they do not block the 2D/3D toggle button, and that the event handler methods are called when you click them:
 
@@ -57,7 +45,7 @@ If you need some help, you can refer to [the solution to this exercise](../../so
 
 ## Zoom in and out on the map and the scene
 
-1. In ArcGIS Runtime, zooming on a map and zooming on a scene use simple but quite different mechanisms. We'll talk more about those mechanisms later, but for now, get ready to zoom by creating an empty `private void zoomMap(double)` method and a `private void zoomScene(double)` method in your class. For each of these methods, it's a good idea to name the parameter `factor`.
+1. In ArcGIS Runtime, zooming on a map and zooming on a scene use simple but quite different mechanisms. We'll talk more about those mechanisms later, but for now, get ready to zoom by creating an empty `private void zoomMap(double factor)` method and a `private void zoomScene(double factor)` method in your class. For each of these methods, it's a good idea to name the parameter `factor`.
 
 1. Rather than having your event handlers call `zoomMap` and `zoomScene` directly, you can simplify your code by creating a generic `zoom(double)` method that calls `zoomMap` or `zoomScene` depending on whether you're currently in 2D mode or 3D mode:
 
@@ -71,38 +59,38 @@ If you need some help, you can refer to [the solution to this exercise](../../so
     }
     ```
     
-1. In your zoom button event handler methods, replace the `System.out.println` call with a call to `zoom(double)` with a _factor_. Use a factor between 0 and 1 to zoom out, and use a factor greater than 1 to zoom in:
+1. In your zoom button event handler methods, call to `zoom(double)` with a _factor_. Use a factor between 0 and 1 to zoom out, and use a factor greater than 1 to zoom in:
 
     ```
-    private void button_zoomIn_onAction() {
-        zoom(2.0);
-    }
     
-    private void button_zoomOut_onAction() {
-        zoom(0.5);
-    }
+        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            zoom(2);
+        }
+        private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            zoom(.5);
+        }
     ```
     
 1. For the ArcGIS Runtime 2D `MapView`, the zoom mechanism is relatively simple: get the map scale, divide it by a factor, and use the quotient to set the `MapView`'s viewpoint scale. Write the code for this operation inside the `zoomMap(double)` method:
 
     ```
-    mapView.setViewpointScaleAsync(mapView.getMapScale() / factor);
+    mapView.SetViewpointScaleAsync(mapView.GetCurrentViewpoint(ViewpointType.CenterAndScale).Scale / factor);
     ```
     
-1. 3D is awesome, but it is almost always more complicated than 2D, and zooming is no exception. ArcGIS Runtime's 3D `SceneView` uses a _viewpoint_ with a _camera_ to change the user's view of the scene. Objects of type `Camera` are immutable and have a fluent API, so you can get a copy of the `SceneView`'s current viewpoint camera, use a factor to move it toward or away from the camera's current target, and use it as the `SceneView`'s new viewpoint camera. You can even animate the camera's movement and specify the duration of the animated camera movement (the code that follows uses `0.5f` to animate for half a second). In this case, we will use the `Camera`'s `zoomToward` method to create a new `Camera`. Add the following code to your `zoomScene(double)` method. As you do, make sure you import `com.esri.arcgisruntime.geometry.Point` and `com.esri.arcgisruntime.mapping.view.Camera` instead of some other `Point` and `Camera` classes:
+1. 3D is awesome, but it is almost always more complicated than 2D, and zooming is no exception. ArcGIS Runtime's 3D `SceneView` uses a _viewpoint_ with a _camera_ to change the user's view of the scene. Objects of type `Camera` are immutable and have a fluent API, so you can get a copy of the `SceneView`'s current viewpoint camera, use a factor to move it toward or away from the camera's current target, and use it as the `SceneView`'s new viewpoint camera. You can even animate the camera's movement and specify the duration of the animated camera movement (the code that follows uses a TimeSpan). In this case, we will use the `Camera`'s `zoomToward` method to create a new `Camera`. Add the following code to your `zoomScene(double)` method. 
 
     ```
-    Geometry target = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).getTargetGeometry();
-    if (target instanceof Point) {
-        Camera camera = sceneView.getCurrentViewpointCamera()
-                .zoomToward((Point) target, factor);
-        sceneView.setViewpointCameraWithDurationAsync(camera, 0.5f);
-    } else {
-        // This shouldn't happen, but in case it does...
-        Logger.getLogger(WorkshopApp.class.getName()).log(Level.WARNING,
-                "SceneView.getCurrentViewpoint returned {0} instead of {1}",
-                new String[] { target.getClass().getName(), Point.class.getName() });
-    }
+    private void zoomScene(double factor)
+        {
+            Esri.ArcGISRuntime.Geometry.Geometry target = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale).TargetGeometry;
+            if (target.GeometryType == GeometryType.Point)
+            {
+                Camera camera = sceneView.Camera.ZoomToward((Esri.ArcGISRuntime.Geometry.MapPoint)target, factor);
+                sceneView.SetViewpointCameraAsync(camera, new TimeSpan(1000));
+            }
+        }
     ```
     
 1. Compile and run your app. Verify that the zoom in and out buttons work in both 2D mode and 3D mode.
