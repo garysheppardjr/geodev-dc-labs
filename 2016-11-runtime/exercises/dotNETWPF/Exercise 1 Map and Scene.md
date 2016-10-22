@@ -13,237 +13,162 @@ Prerequisites:
 
 If you need some help, you can refer to [the solution to this exercise](../../solutions/dotNETWPF/Ex1_MapAndScene), available in this repository.
 
-## Create a new Visual Studio ArcGIS Runtime WPF application
+## Create a new Visual Studio ArcGIS Runtime WPF application and add a 2D map
 1. Using Visual Studio create a new ArcGIS Runtime Application WPF.  This will create your first map application containing a basemap.  You can compile and run the application.
     
 	```
 	Templates > Visual C# > Windows > Classic Desktop
     ```
 
-2. We need to add the images that will be used by the application into the solution.  Go to [the images directory](../../images) of this repository and copy all of the images.  Then go to the Solution Explorer in Visual Studio and add a folder called 'images'.  Right click on that folder and select Add > Existing Item and add all the images to your solution.  Now let's add them as resources within our solution.  Go to the MainWindow.xaml and add the following code:
-
+2. We need to add the images that will be used by the application into the solution.  Go to [the images directory](../../images) of this repository and copy all of the images.  Then go to the Solution Explorer in Visual Studio and add a folder called 'images'.  Right click on that folder and select Add > Existing Item and add all the images to your solution.  Now let's add them as resources within our solution.  Go to the MainWindow.xaml and add the following code below Width="525> and &ltGRID>:
     
-	```
+    ```
     <Window.Resources>
         <Image x:Key="3D" Source="images/three_d.png" Height="50" Width="50" />
         <Image x:Key="2D" Source="images/two_d.png" Height="50" Width="50"/>
     </Window.Resources>
     ```
-	
-
-3. Create a Java package called `resources` in your application. Go to [the images directory](../../images) of this repository and copy all of the images to your `resources` package. (Copying the images is easier if you clone this repo, or if you fork this repo and clone your fork.) Then instantiate a `Button` and two `ImageView` fields that reference the images you copied. Use the 3D `ImageView` for the Button. Be sure to import `javafx.scene.image.Image`, rather than some other `Image` class. (Note: you can use text buttons without the images if you prefer.)
+3. Now we modify the MainWindow.xaml to simplify the mapView and also add the button to toggle between 2D and 3D.  This session is focused on the ArcGIS Runtime so we will not spend anytimem on UI.  Replace the code between the &ltGrid> &ltGrid/> tags with the following code:
 
     ```
-    private final ImageView imageView_2d =
-          new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/two_d.png")));
-    private final ImageView imageView_3d =
-          new ImageView(new Image(WorkshopApp.class.getResourceAsStream("/resources/three_d.png")));
-    private final Button button_toggle2d3d = new Button(null, imageView_3d);
+        <esri:MapView x:Name="mapView" Margin="0,0,0.4,-0.2"/>
+        <Border
+            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            Margin="0" Width="67" Height="175">
+            <StackPanel Margin="0" Width="72" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                <Button x:Name="ViewButton" Width="50" Height="50" Padding="1" Margin="0,5,5,5 HorizontalAlignment="Right" RenderTransformOrigin="4.054,-0.693" Content="{DynamicResource 3D}"/>
+            </StackPanel>
+        </Border>
     ```
-
-1. Add a default constructor to your class:
-
-    ```
-    public WorkshopApp() {
-        super();
-    }
-    ```
-    
-1. Implement the `start(Stage)` method. In `start(Stage)`, add the `Button` near the lower-right corner of the `AnchorPane`. Create a new JavaFX `Scene` with your `AnchorPane`. Set the `Stage`'s title, width, height, and scene, and then call `show` on the `Stage`:
-
-    ```
-    @Override
-    public void start(Stage primaryStage) {
-        AnchorPane.setRightAnchor(button_toggle2d3d, 15.0);
-        AnchorPane.setBottomAnchor(button_toggle2d3d, 15.0);
-        anchorPane.getChildren().addAll(button_toggle2d3d);
-
-        Scene javaFxScene = new Scene(anchorPane);
-        primaryStage.setTitle("My first map application");
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
-        primaryStage.setScene(javaFxScene);
-        primaryStage.show();
-    }
-    ```
-    
-1. Add a `main` method to your class that calls `Application.launch`:
-
-    ```
-    public static void main(String[] args) {
-        launch(args);
-    }
-    ```
-    
-1. Compile and run your app. Verify that a button appears in the lower-right corner of the app:
+4. Compile and run your app. Verify that a button appears in the lower-right corner of the app:
 
     ![Blank app with button](01-blank-app-with-button.png)
     
-## Add ArcGIS Runtime to the app
-
-You have two options for adding ArcGIS Runtime Quartz to your Java application project. Choose one of the following:
-
-1. **Use Gradle**: you can use Gradle if you started the exercise by creating a Gradle project. open `build.gradle` and add ArcGIS dependencies. See [Develop your first map app using Gradle](https://developers.arcgis.com/java/beta/guide/develop-your-first-mapping-app-using-gradle.htm) for details.
+5. Add using statements for the different namespaces that will be used throughout the exercises:
 
     ```
-    group 'demoApp'
-    version '1.0' 
-    apply plugin: 'java'
-    apply plugin: 'application'
-    apply plugin: 'com.esri.arcgisruntime.java'
-    buildscript {
-        repositories {
-            maven {
-                url 'https://esri.bintray.com/arcgis'
-            }
-        }
-        dependencies {
-            classpath 'com.esri.arcgisruntime:gradle-arcgis-java-plugin:0.9.0'
-        }
-    }
-    run {
-        mainClassName = "demoApp.MyMapApp"
-    }
+   using Esri.ArcGISRuntime.Mapping;
+   using Esri.ArcGISRuntime.Geometry;
+   using Esri.ArcGISRuntime.Symbology;
+   using Esri.ArcGISRuntime.Data;
+   using Esri.ArcGISRuntime.Tasks.NetworkAnalyst;
+   using Esri.ArcGISRuntime.Portal;
+   using Esri.ArcGISRuntime.Security;
     ```
     
-2. **Use the downloaded ArcGIS Runtime SDK**: download the ArcGIS Runtime SDK (Quartz) for Java and unzip it. In your Java project, reference the JAR files in the SDK's `libs` directory. You must also copy the SDK's `jniLibs` and `resources` directories to your Java project directory. (There are other ways of referencing ArcGIS Runtime, but copying `jniLibs` and `resources` is the simplest.) See [Develop your first map app using the downloaded SDK](https://developers.arcgis.com/java/beta/guide/develop-your-first-map-app.htm) for details.
-
-## Add a 2D map to the app
-
-1. Before your constructor, instantiate a `MapView` field and an `ArcGISMap` field:
+6. Set global variables for the Map myMap and set to null:
 
     ```
-    private final MapView mapView = new MapView();
-    private ArcGISMap map = new ArcGISMap();
+     private Map myMap = null;
     ```
     
-1. In your constructor, set the `ArcGISMap`'s basemap and set the `MapView`'s map:
+6. Create an Initialize() method to create the UI, setup the control references and execute initialization of the application.  Within the method we want to initialize the map and populate it with a basemap and associate the map to the map view created in the Mainwindow.xaml.  Call the initialize method after initializeComponent() in MainWindow():
 
     ```
-    map.setBasemap(Basemap.createNationalGeographic());
-    mapView.setMap(map);
-    ```
-    
-1. Fill the `AnchorPane` with the `MapView`. Edit the `addAll` call to add the `MapView` before adding the `Button`:
-
-    ```
-    AnchorPane.setLeftAnchor(mapView, 0.0);
-    AnchorPane.setRightAnchor(mapView, 0.0);
-    AnchorPane.setTopAnchor(mapView, 0.0);
-    AnchorPane.setBottomAnchor(mapView, 0.0);
-    // Edit the addAll call you added previously
-    anchorPane.getChildren().addAll(mapView, button_toggle2d3d);
-    ```
-    
-1. Implement the `stop()` method. Inside that method, call `dispose()` on the MapView:
-
-    ```
-    @Override
-    public void stop() throws Exception {
-        mapView.dispose();
-        
-        super.stop();
+    private void Initialize()
+    {
+        //Exercise 1: Create new Map with basemap and initial location
+        myMap = new Map(Basemap.CreateNationalGeographic());
+        //Exercise 1: Assign the map to the MapView
+        mapView.Map = myMap;
     }
     ```
-    
-1. Compile and run your app. Verify that a map fills the window and that a button appears in the lower-right corner of the app on top of the map:
+7. Compile and run your app. Verify that a map fills the window and that a button appears in the lower-right corner of the app on top of the map:
 
     ![Map and button](02-map-and-button.png)
     
-## Add a 3D scene to the app, and use a toggle button to switch between 2D and 3D
+## Add a 3D scene to the app, and use a button to switch between 2D and 3D
 
 The Quartz release brings 3D visualization to ArcGIS Runtime. Everyone loves 3D! To conclude this exercise, you will add a 3D scene to the app, as well as a button that lets the user toggle between seeing the 2D map and seeing the 3D scene.
 
-1. Before your constructor, instantiate a constant for the URL of an elevation service:
+8. Before your constructor, instantiate a constant for the URL of an elevation service:
 
     ```
-    private static final String ELEVATION_IMAGE_SERVICE = 
+    private static string ELEVATION_IMAGE_SERVICE = 
             "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
     ```
     
-1. Before your constructor, declare a `SceneView` field and an `ArcGISScene` field. Set them to `null`; we don't want to instantiate them unless the user actually switches to 3D mode. Instantiate a `boolean` field to keep track of whether the app is currently displaying 3D or not:
+9. Back in the MainWindow.xaml add the a SceneView for the scene to be displayed in.  Add this below the MapView.
 
     ```
-    private SceneView sceneView = null;
-    private ArcGISScene scene = null;
-    private boolean threeD = false;
+    <esri:SceneView x:Name="sceneView" Visibility="Hidden" Margin="0,0,0.4,-0.2"/>
     ```
     
-1. Declare a `private void` method to be called when the 2D/3D toggle button is clicked. This event handler method should take no parameters. Inside this method, change the value of the `threeD` field, and change the button's image (or change the button's text if you opted not to use images):
+10. Before your constructor in MainWindow.xaml.cs, instantiate a variable for the Scene as well as a constant for the URL of an elevation service. Also add a boolean to know when you are in 3D vs. 2D.
 
     ```
-    private void button_toggle2d3d_onAction() {
-        threeD = !threeD;
-        button_toggle2d3d.setGraphic(threeD ? imageView_2d : imageView_3d);
+    private Scene myScene = null;
+    private static string ELEVATION_IMAGE_SERVICE = "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+    private bool threeD = false;
+    ```
+    
+11. In MainWindow.xaml we need to add a click event to the button to toggle to a 3D view.  Visual Studio will create the for you when start typeing the Click= and you can tab to have the event handler created automatically. 
+
+    ```
+    <Button x:Name="ViewButton" Click="ViewButton_Click"  Width="50" Height="50" Padding="1" Margin="0,5,5,5" HorizontalAlignment="Right" RenderTransformOrigin="4.054,-0.693" Content="{DynamicResource 3D}"/>
+    ```
+    The method in MainWindow.xaml.cs looks like this:
+     ```
+     private void ViewButton_Click(object sender, RoutedEventArgs e)
+     {
+     }
+     ```
+12. Next let's add the code to change the image on the button and toogle the the threeD variable to be true or false:
+    ```
+    private void ViewButton_Click(object sender, RoutedEventArgs e)
+    {
+	//Change button to 2D or 3D when button is clicked
+        ViewButton.Content = FindResource(ViewButton.Content == FindResource("3D") ? "2D" : "3D");
+	if (ViewButton.Content == FindResource("2D"))
+        {
+            threeD = true;
+        }
+        else
+        {
+            threeD = false;
+        }
     }
     ```
     
-1. In your constructor, set the toggle button's `onAction` event to call your event handler method. (The thin arrow syntax declares a [lambda expression](https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html). Lambdas are new in Java 8. We recommend lambdas for performance and readability, but of course you may use the traditional approach of creating anonymous handler classes if you prefer.)
+13. If we're switching to 3D, and we have not been in 3D mode before during the current run of the app, we need to set up the 3D scene. If `scene` is null, do the following:
+   1. Instantiate scene as a new Scene.
+   2. Instantiate the SceneView and set its Scene.
+   3. Set the Scene's basemap and elevation surface.
 
     ```
-    button_toggle2d3d.setOnAction(event -> button_toggle2d3d_onAction());
-    ```
-    
-1. Compile and run your app. Verify that clicking the button changes its image (or text).
-    
-1. In your event handler method for the 2D/3D toggle button, after changing the value of the `threeD` field, add an `if` statement to handle whether we're switching to 2D or switching to 3D:
-
-    ```
-    if (threeD) {
-    
-    } else {
-    
+    if (myScene == null)
+    {
+       //Create a new scene
+       myScene = new Scene(Basemap.CreateNationalGeographic());
+       sceneView.Scene = myScene;
+       // create an elevation source
+       var elevationSource = new ArcGISTiledElevationSource(new System.Uri(ELEVATION_IMAGE_SERVICE));
+       // create a surface and add the elevation surface
+       var sceneSurface = new Surface();
+       sceneSurface.ElevationSources.Add(elevationSource);
+       // apply the surface to the scene
+       sceneView.Scene.BaseSurface = sceneSurface;
     }
-    ```
+    ```   
     
-1. If we're switching to 3D, and we have not been in 3D mode before during the current run of the app, we need to set up the 3D scene. If `scene` is null, do the following:
-    1. Instantiate `scene` as a new `ArcGISScene`.
-    1. Set the `ArcGISScene`'s basemap and elevation surface.
-    1. Instantiate the `SceneView` and set its `ArcGISScene`.
-    1. Use `AnchorPane` to set up the `SceneView` to fill the app.
-    
-    ```
-    if (null == scene) {
-        // Set up the 3D scene. This only happens the first time the user switches to 3D.
-        scene = new ArcGISScene();
-        scene.setBasemap(Basemap.createImagery());
-        Surface surface = new Surface();
-        surface.getElevationSources().add(new ArcGISTiledElevationSource(ELEVATION_IMAGE_SERVICE));
-        scene.setBaseSurface(surface);
-        sceneView = new SceneView();
-        sceneView.setArcGISScene(scene);
-        AnchorPane.setLeftAnchor(sceneView, 0.0);
-        AnchorPane.setRightAnchor(sceneView, 0.0);
-        AnchorPane.setTopAnchor(sceneView, 0.0);
-        AnchorPane.setBottomAnchor(sceneView, 0.0);
-    }
-    ```
-    
-1. If we're switching to 3D, regardless of whether this is the first time (i.e. outside the `if (null == scene)` block), remove the `MapView` from the `AnchorPane` and add the `SceneView` instead, adding it at index 0 so that it is underneath the toggle button:
+14. If we're switching to 3D, regardless of whether this is the first time (i.e. outside the `if (myScene == null)` block), hide the `MapView` and show the `SceneView` instead:
 
     ```
-    anchorPane.getChildren().remove(mapView);
-    anchorPane.getChildren().add(0, sceneView);
+    //Once the scene has been created hide the mapView and show the sceneView
+    mapView.Visibility = Visibility.Hidden;
+    sceneView.Visibility = Visibility.Visible;
     ```
     
-1. If we're switching to 2D, i.e. the `else` block, remove the `SceneView` from the `AnchorPane` and add the `MapView` instead, adding it at index 0 so that it is underneath the toggle button:
+15. If we're switching to 2D, i.e. the `else` block, hide the `SceneView` and show the `MapView` instead:
 
     ```
-    anchorPane.getChildren().remove(sceneView);
-    anchorPane.getChildren().add(0, mapView);
+    sceneView.Visibility = Visibility.Hidden;
+    mapView.Visibility = Visibility.Visible;
     ```
     
-1. In your `stop()` method, dispose of the `SceneView` if it is not null:
-
-    ```
-    if (null != sceneView) {
-        sceneView.dispose();
-    }
-    ```
+16. Compile and run your app. Verify that clicking the button changes its image and also toggles between 2D and 3D:
     
-1. Compile and run your app. Verify that clicking the button changes its image (or text) and also toggles between 2D and 3D:
-    
-    ![Toggle to 3D](03-toggle-to-3d.jpg)
+    ![Toggle to 3D](03-toggle-to-3d.png)
     
 ## How did it go?
 
