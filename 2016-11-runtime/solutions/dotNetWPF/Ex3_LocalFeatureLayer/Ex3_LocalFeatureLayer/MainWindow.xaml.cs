@@ -66,28 +66,29 @@ namespace Ex1_MapAndScene
                     sceneSurface.ElevationSources.Add(elevationSource);
                     // apply the surface to the scene
                     sceneView.Scene.BaseSurface = sceneSurface;
-                }
-                //Exercise 3: Open mobie map package (.mmpk) and add its operational layers to the scene
-                var mmpk = await MobileMapPackage.OpenAsync(MMPK_PATH);
+                    //Exercise 3: Open mobie map package (.mmpk) and add its operational layers to the scene
+                    var mmpk = await MobileMapPackage.OpenAsync(MMPK_PATH);
 
-                if (mmpk.Maps.Count >= 0)
-                {
-                    myMap = mmpk.Maps[0];
-                    LayerCollection layerCollection = myMap.OperationalLayers;
-                    
-                    for (int i = 0; i < layerCollection.Count(); i++)
+                    if (mmpk.Maps.Count >= 0)
                     {
-                        var thelayer = layerCollection[i];
-                        myMap.OperationalLayers.Clear();
-                        myScene.OperationalLayers.Add(thelayer);
-                        sceneView.SetViewpoint(myMap.InitialViewpoint);
-                        //Rotate the camera
-                        Viewpoint viewpoint = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale);
-                        Esri.ArcGISRuntime.Geometry.MapPoint targetPoint = (MapPoint)viewpoint.TargetGeometry;
-                        Camera camera = sceneView.Camera.RotateAround(targetPoint, 45.0, 65.0, 0.0);
-                        await sceneView.SetViewpointCameraAsync(camera);
+                        myMap = mmpk.Maps[0];
+                        LayerCollection layerCollection = myMap.OperationalLayers;
+
+                        for (int i = 0; i < layerCollection.Count(); i++)
+                        {
+                            var thelayer = layerCollection[i];
+                            myMap.OperationalLayers.Clear();
+                            myScene.OperationalLayers.Add(thelayer);
+                            sceneView.SetViewpoint(myMap.InitialViewpoint);
+                            //Rotate the camera
+                            Viewpoint viewpoint = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale);
+                            Esri.ArcGISRuntime.Geometry.MapPoint targetPoint = (MapPoint)viewpoint.TargetGeometry;
+                            Camera camera = sceneView.Camera.RotateAround(targetPoint, 45.0, 65.0, 0.0);
+                            await sceneView.SetViewpointCameraAsync(camera);
+                        }
+                        sceneView.Scene = myScene;
                     }
-                    sceneView.Scene = myScene;
+                
                 }
                 //Exercise 1 Once the scene has been created hide the mapView and show the sceneView
                 mapView.Visibility = Visibility.Hidden;

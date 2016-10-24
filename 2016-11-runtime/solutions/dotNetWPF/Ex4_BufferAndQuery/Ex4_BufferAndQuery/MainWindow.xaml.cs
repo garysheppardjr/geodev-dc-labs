@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Mapping;
+﻿using Esri.ArcGISRuntime.UI;
+using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.Data;
@@ -10,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Ex1_MapAndScene
 {
@@ -21,6 +23,10 @@ namespace Ex1_MapAndScene
         private Scene myScene = null;
         private bool threeD = false;
         private static string MMPK_PATH = @"..\..\data\DC_Crime_Data.mmpk";
+        private SimpleMarkerSymbol CLICK_SYMBOL = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, Colors.Orange, 10);
+        private SimpleFillSymbol BUFFER_SYMBOL = new SimpleFillSymbol(SimpleFillSymbolStyle.Null, Colors.Transparent, new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Colors.Orange, 3));
+        private GraphicsOverlay bufferAndQueryMapGraphics = new GraphicsOverlay();
+        private GraphicsOverlay bufferAndQuerySceneGraphics = new GraphicsOverlay();
 
         public MainWindow()
         {
@@ -45,6 +51,7 @@ namespace Ex1_MapAndScene
                 myMap.Basemap = Basemap.CreateNationalGeographic();
                 mapView.Map = myMap;
             }
+            mapView.GraphicsOverlays.Add(bufferAndQueryMapGraphics);
         }
 
         private async void ViewButton_Click(object sender, RoutedEventArgs e)
@@ -66,29 +73,33 @@ namespace Ex1_MapAndScene
                     sceneSurface.ElevationSources.Add(elevationSource);
                     // apply the surface to the scene
                     sceneView.Scene.BaseSurface = sceneSurface;
-                }
-                //Exercise 3: Open mobie map package (.mmpk) and add its operational layers to the scene
-                var mmpk = await MobileMapPackage.OpenAsync(MMPK_PATH);
 
-                if (mmpk.Maps.Count >= 0)
-                {
-                    myMap = mmpk.Maps[0];
-                    LayerCollection layerCollection = myMap.OperationalLayers;
+                    //Exercise 3: Open mobie map package (.mmpk) and add its operational layers to the scene
+                    var mmpk = await MobileMapPackage.OpenAsync(MMPK_PATH);
 
-                    for (int i = 0; i < layerCollection.Count(); i++)
+                    if (mmpk.Maps.Count >= 0)
                     {
-                        var thelayer = layerCollection[i];
-                        myMap.OperationalLayers.Clear();
-                        myScene.OperationalLayers.Add(thelayer);
-                        sceneView.SetViewpoint(myMap.InitialViewpoint);
-                        //Rotate the camera
-                        Viewpoint viewpoint = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale);
-                        Esri.ArcGISRuntime.Geometry.MapPoint targetPoint = (MapPoint)viewpoint.TargetGeometry;
-                        Camera camera = sceneView.Camera.RotateAround(targetPoint, 45.0, 65.0, 0.0);
-                        await sceneView.SetViewpointCameraAsync(camera);
+                        myMap = mmpk.Maps[0];
+                        LayerCollection layerCollection = myMap.OperationalLayers;
+
+                        for (int i = 0; i < layerCollection.Count(); i++)
+                        {
+                            var thelayer = layerCollection[i];
+                            myMap.OperationalLayers.Clear();
+                            myScene.OperationalLayers.Add(thelayer);
+                            sceneView.SetViewpoint(myMap.InitialViewpoint);
+                            //Rotate the camera
+                            Viewpoint viewpoint = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale);
+                            Esri.ArcGISRuntime.Geometry.MapPoint targetPoint = (MapPoint)viewpoint.TargetGeometry;
+                            Camera camera = sceneView.Camera.RotateAround(targetPoint, 45.0, 65.0, 0.0);
+                            await sceneView.SetViewpointCameraAsync(camera);
+                        }
+                        sceneView.Scene = myScene;
+                        bufferAndQuerySceneGraphics.SceneProperties.SurfacePlacement = SurfacePlacement.Draped;
+                        sceneView.GraphicsOverlays.Add(bufferAndQuerySceneGraphics);
                     }
-                    sceneView.Scene = myScene;
                 }
+                
                 //Exercise 1 Once the scene has been created hide the mapView and show the sceneView
                 mapView.Visibility = Visibility.Hidden;
                 sceneView.Visibility = Visibility.Visible;
@@ -137,6 +148,73 @@ namespace Ex1_MapAndScene
         private void zoomMap(double factor)
         {
             mapView.SetViewpointScaleAsync(mapView.GetCurrentViewpoint(ViewpointType.CenterAndScale).Scale / factor);
+        }
+
+        private void QueryandBufferButton_Click(object sender, RoutedEventArgs e)
+        {
+            //Change Query button to Selected image
+            QueryandBufferButton.Content = FindResource(QueryandBufferButton.Content == FindResource("Location") ? "LocationSelected" : "Location");
+            if (QueryandBufferButton.Content == FindResource("LocationSelected"))
+            {
+                if (sceneView != null)
+                    sceneView.GeoViewTapped += OnView_Tapped;
+                mapView.GeoViewTapped += OnView_Tapped;
+            }       
+            else
+            {
+
+                mapView.GeoViewTapped -= OnView_Tapped;
+                sceneView.GeoViewTapped -= OnView_Tapped;
+                bufferAndQueryMapGraphics.Graphics.Clear();
+                bufferAndQuerySceneGraphics.Graphics.Clear();
+                LayerCollection operationalLayers;
+                if (threeD)
+                    operationalLayers = sceneView.Scene.OperationalLayers;
+                else
+                    operationalLayers = mapView.Map.OperationalLayers;
+                foreach (Layer layer in operationalLayers)
+                {
+                    ((FeatureLayer)layer).ClearSelection();
+                }
+            }
+        }
+
+        private void OnView_Tapped(object sender, Esri.ArcGISRuntime.UI.GeoViewInputEventArgs e)
+        {
+            MapPoint geoPoint = getGeoPoint(e);
+            geoPoint = (MapPoint)GeometryEngine.Project(geoPoint, SpatialReference.Create(3857));
+            Polygon buffer = (Polygon)GeometryEngine.Buffer(geoPoint, 1000.0);
+
+            GraphicCollection graphics = (threeD ? bufferAndQuerySceneGraphics : bufferAndQueryMapGraphics).Graphics;
+            graphics.Clear();
+            graphics.Add(new Graphic(buffer, BUFFER_SYMBOL));
+            graphics.Add(new Graphic(geoPoint, CLICK_SYMBOL));
+
+            Esri.ArcGISRuntime.Data.QueryParameters query = new Esri.ArcGISRuntime.Data.QueryParameters();
+            query.Geometry = buffer;
+            LayerCollection operationalLayers;
+            if (threeD)
+                operationalLayers = sceneView.Scene.OperationalLayers;
+            else
+                operationalLayers = mapView.Map.OperationalLayers;
+            foreach (Layer layer in operationalLayers)
+            {
+                ((FeatureLayer)layer).SelectFeaturesAsync(query, SelectionMode.New);
+            }
+        }
+        private MapPoint getGeoPoint(GeoViewInputEventArgs point)
+        {
+            MapPoint geoPoint = null;
+            Point screenPoint = new Point(point.Position.X, point.Position.Y);
+            if (threeD)
+            {
+                geoPoint = sceneView.ScreenToBaseSurface(screenPoint);
+            }
+            else
+            {
+                geoPoint = mapView.ScreenToLocation(screenPoint);
+            }
+            return geoPoint;
         }
     }
 }
