@@ -69,6 +69,16 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\location.png" />
+    <Resource Include="images\location_selected.png" />
+    <Resource Include="images\routing.png" />
+    <Resource Include="images\routing_selected.png" />
+    <Resource Include="images\three_d.png" />
+    <Resource Include="images\two_d.png" />
+    <Resource Include="images\zoom_in.png" />
+    <Resource Include="images\zoom_out.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 			 Other similar extension points exist, see Microsoft.Common.targets.
