@@ -87,9 +87,6 @@ If you need some help, you can refer to [the solution to this exercise](../../so
    onStatusChanged: {
             if (status === Enums.MapStatusReady) {
                 extent = initialExtent;
-                startGraphics.renderingMode = Enums.RenderingModeStatic;
-                addLayer(startGraphics);
-
             }
         }
         Envelope {
