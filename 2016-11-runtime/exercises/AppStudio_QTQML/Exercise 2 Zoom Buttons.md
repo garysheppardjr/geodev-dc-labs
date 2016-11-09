@@ -16,11 +16,9 @@ If you need some help, you can refer to [the solution to this exercise](../../so
 
     ```
     import ArcGIS.AppFramework.Runtime.Controls 1.0
-
     ```
  
 1. Next we need to add the buttons to the app.  This code can be added right after where you created the initial Extent.
-
     ```
     ZoomButtons {
             anchors {
@@ -38,19 +36,18 @@ If you need some help, you can refer to [the solution to this exercise](../../so
 
 ## Add the location button 
 1. To add the location button we need to import another library:
-	```
-    import QtPositioning 5.3
-
     
+    ```
+     import QtPositioning 5.3
+    ```	
+2.  To add the position button after the zoom buttons just add this code below the zoom buttons:
 
-2.  To add the position butt after the zoom buttons just add this code below the zoom buttons:
-
-	```
+    ```
     positionDisplay {
          positionSource: PositionSource {
          }
     }
-	```	
+    ```	
 1. Compile and run your app. Verify that the zoom buttons display on top of the map:
 
     ![Zoom and location buttons](04-zoom-location-buttons.png)
