@@ -25,7 +25,7 @@
     "name": null,
     "numComments": 3,
     "numRatings": 0,
-    "numViews": 3393,
+    "numViews": 3391,
     "orgId": "2U3NfasNQ9o9LkLt",
     "owner": null,
     "ownerFolder": null,
@@ -37,7 +37,7 @@
     "spatialReference": null,
     "tags": null,
     "thumbnail": "thumbnail/thumbnail.png",
-    "title": "Ex5_ServiceArea",
+    "title": "Ex3_AddFeatureService",
     "type": "Native Application",
     "typeKeywords": [
         "API_QML",

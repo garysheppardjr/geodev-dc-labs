@@ -1,4 +1,4 @@
-/* Copyright 2016 Esri
+/* Copyright 2015 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,26 @@
  *
  */
 
+
 import QtQuick 2.3
 import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.1
 import QtPositioning 5.3
-import QtQuick.Dialogs 1.2
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Controls 1.0
 import ArcGIS.AppFramework.Runtime 1.0
 import ArcGIS.AppFramework.Runtime.Controls 1.0
-import ArcGIS.AppFramework.Runtime 1.0
-
-
-//------------------------------------------------------------------------------
 
 App {
     id: app
-    width: 640
-    height: 480
+    width: 400
+    height: 640
 
     property var selectedId
     property string errorMsg
     property int facilities: 0
     property double scaleFactor: System.displayScaleFactor
 
-
-    Envelope {
-        id: initialExtent
-        xMax: -8539362.27
-        yMax: 4723928.16
-        xMin: -8610295.83
-        yMin: 4702907.97
-        spatialReference: map.spatialReference
-    }
     Rectangle {
         id: titleRect
         anchors {
@@ -82,7 +67,6 @@ App {
         }
 
     }
-
     Map {
         id: map
 
@@ -99,32 +83,8 @@ App {
         mapPanningByMagnifierEnabled: true
         zoomByPinchingEnabled: true
 
-        positionDisplay {
-            positionSource: PositionSource {
-            }
-        }
-        UserCredentials {
-            id: oAuthCredentials
-            oAuthClientInfo: OAuthClientInfo {
-                clientId: "XXXXXX"
-                clientSecret: "XXXXXXXX"
-                oAuthMode: Enums.OAuthModeApp
-
-            }
-        }
         ArcGISTiledMapServiceLayer {
             url: app.info.propertyValue("basemapServiceUrl", "http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer")
-        }
-
-        GraphicsLayer {
-                    id: startGraphics
-                    renderer: SimpleRenderer {
-                        SimpleMarkerSymbol {
-                            style: Enums.SimpleMarkerSymbolStyleSquare
-                            size: 10
-                            color: "green"
-                        }
-                    }
         }
 
         onStatusChanged: {
@@ -135,28 +95,13 @@ App {
 
             }
         }
-
-
-        Graphic {
-                id: bufferGraphic
-                symbol: SimpleFillSymbol {
-                    color: Qt.rgba(0.0, 0, 0.5, 0.5)
-                    outline:  SimpleLineSymbol {
-                        color: "aqua"
-                        style: Enums.SimpleLineSymbolStyleSolid
-                        width: 2
-                    }
-                }
-            }
-
-        NorthArrow {
-            anchors {
-                right: parent.right
-                top: parent.top
-                margins: 10
-            }
-
-            visible: map.mapRotation != 0
+        Envelope {
+            id: initialExtent
+            xMax: -8539362.27
+            yMax: 4723928.16
+            xMin: -8610295.83
+            yMin: 4702907.97
+            spatialReference: map.spatialReference
         }
 
         ZoomButtons {
@@ -165,6 +110,22 @@ App {
                 verticalCenter: parent.verticalCenter
                 margins: 10
             }
+        }
+
+        positionDisplay {
+            positionSource: PositionSource {
+            }
+        }
+
+        GeodatabaseFeatureServiceTable {
+                id: metroLineTable
+                url: "http://services.arcgis.com/lA2FZKuu26Fips7U/arcgis/rest/services/MetroLines/FeatureServer/0"
+        }
+
+        FeatureLayer{
+            id: metrolineLayer
+            featureTable: metroLineTable
+            visible: true
         }
 
         Column{
@@ -182,58 +143,68 @@ App {
                 Image {
                         anchors.fill: parent
                         source: "https://raw.githubusercontent.com/garys-esri/geodev-dc-labs/master/2016-11-runtime/images/location.png"
-                        fillMode: Image.Tile
+                        fillMode: Image.PreserveAspectFit
                 }
 
                 checkable: true
-                width: 50
-                height: 50
+                width: 30
+                height: 30
                 checked: false
                 onPressedChanged: {
                     if (!checked){
+                        if (drivetimeButton.checked)
+                            drivetimeButton.checked = false;
                         startGraphics.removeAllGraphics();
                         metrostopsLayer.clearSelection();
                     }
-                    console.log("onpressedchanged", checked)
+
                 }
 
-
             }
-
             Button {
                 id: drivetimeButton
                 enabled: true
                 Image {
                     anchors.fill: parent
                     source: "https://raw.githubusercontent.com/garys-esri/geodev-dc-labs/master/2016-11-runtime/images/car.png"
-                    fillMode: Image.Tile
+                    fillMode: Image.PreserveAspectFit
                 }
                 checkable: true
-                width: 50
-                height: 50
+                width: 30
+                height: 30
                 checked: false
 
                 onPressedChanged: {
                     if (!checked){
+                        if (bufferqueryButton.checked)
+                            bufferqueryButton.checked = false;
                         startGraphics.removeAllGraphics();
+                        metrostopsLayer.clearSelection();
                     }
-
-                    console.log("onpressedchanged", checked)
                 }
             }
         }
-
-
-        GeodatabaseFeatureServiceTable {
-                id: metroLineTable
-                url: "http://services.arcgis.com/lA2FZKuu26Fips7U/arcgis/rest/services/MetroLines/FeatureServer/0"
+        GraphicsLayer {
+                    id: startGraphics
+                    renderer: SimpleRenderer {
+                        SimpleMarkerSymbol {
+                            style: Enums.SimpleMarkerSymbolStyleSquare
+                            size: 10
+                            color: "green"
+                        }
+                    }
         }
-
-        FeatureLayer{
-            id: metrolineLayer
-            featureTable: metroLineTable
-            visible: true
-        }
+        Graphic {
+                id: bufferGraphic
+                symbol: SimpleFillSymbol {
+                    color: Qt.rgba(0.0, 0, 0.5, 0.5)
+                    outline:  SimpleLineSymbol {
+                        color: "aqua"
+                        style: Enums.SimpleLineSymbolStyleSolid
+                        width: 2
+                    }
+                }
+            }
 
         GeodatabaseFeatureServiceTable {
                 id: featureServiceTable
@@ -245,70 +216,6 @@ App {
                     featureTable: featureServiceTable
                     visible: false
         }
-
-
-        ServiceAreaTaskParameters {
-                id: taskParameters
-            }
-
-            ServiceAreaTask {
-                id: serviceAreaTask
-                url: "http://route.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World"
-
-                onSolveStatusChanged: {
-                    // Add the credentials to the identity manager
-                    //ArcGISRuntime.identityManager.setCredential(oAuthCredentials, "https://www.arcgis.com/sharing/rest");
-                    if (solveStatus === Enums.SolveStatusCompleted) {
-
-                        var polygons = solveResult.serviceAreaPolygons.graphics;
-                        for (var index = 0; index < polygons.length; index++) {
-                            var polygon = polygons[index];
-                            polygonFill.color = Qt.rgba(Math.random()%255, Math.random()%255, Math.random()%255, .5);
-                            serviceAreaPolygonGraphic.symbol = polygonFill; // re-randomize the color
-                            var graphic = serviceAreaPolygonGraphic.clone();
-                            graphic.geometry = polygon.geometry;
-                            startGraphics.addGraphic(graphic);
-                        }
-                    } else if (solveStatus === Enums.SolveStatusErrored) {
-                        errorMsg = "Solve error:" + solveError.message+ "\nPlease reset and start over.";
-                        messageDialog.visible = true;
-                    }
-                }
-            }
-
-            NAFeaturesAsFeature {
-                id: facilitiesFeatures
-            }
-
-            SimpleFillSymbol {
-                id: polygonFill
-            }
-
-            Graphic {
-                id: serviceAreaPolygonGraphic
-            }
-
-            SimpleLineSymbol {
-                id: symbolOutline
-                color: "black"
-                width: 0.5
-            }
-
-            SimpleMarkerSymbol {
-                id: facilitySymbol
-                color: "blue"
-                style: Enums.SimpleMarkerSymbolStyleSquare
-                size: 10
-                outline: symbolOutline
-            }
-
-            Graphic {
-                id: facilityGraphic
-                symbol: facilitySymbol
-            }
-
-
-
         onMouseClicked: {
             startGraphics.removeAllGraphics();
             metrostopsLayer.clearSelection();
@@ -329,8 +236,6 @@ App {
                     metrostopsLayer.selectionColor = "aqua";
                     metrostopsLayer.selectFeaturesByQuery(queryParams);
 
-                    //Uncheck the bufferquery button
-                    //bufferqueryButton.checked = false;
                 }
             }
             else if (drivetimeButton.checked) {
@@ -347,19 +252,86 @@ App {
                   taskParameters.outSpatialReference = map.spatialReference;
                   serviceAreaTask.credentials = oAuthCredentials;
                   serviceAreaTask.solve(taskParameters);
-
-                  //drivetimeButton.checked = false;
                 }
             }
 
+
+        }
+        Query {
+                id: queryParams
+                spatialRelationship: Enums.SpatialRelationshipIntersects
+                outFields: ["OBJECTID_1", "NAME"]
+            }
+        NAFeaturesAsFeature {
+            id: facilitiesFeatures
+        }
+        SimpleFillSymbol {
+            id: polygonFill
         }
 
-    }
-    Query {
-            id: queryParams
-            spatialRelationship: Enums.SpatialRelationshipIntersects
-            outFields: ["OBJECTID_1", "NAME"]
+        Graphic {
+            id: serviceAreaPolygonGraphic
         }
+
+        SimpleLineSymbol {
+            id: symbolOutline
+            color: "black"
+            width: 0.5
+        }
+
+        SimpleMarkerSymbol {
+            id: facilitySymbol
+            color: "blue"
+            style: Enums.SimpleMarkerSymbolStyleSquare
+            size: 10
+            outline: symbolOutline
+        }
+
+        Graphic {
+            id: facilityGraphic
+            symbol: facilitySymbol
+        }
+        UserCredentials {
+            id: oAuthCredentials
+            oAuthClientInfo: OAuthClientInfo {
+                clientId: "2MGu4pheoHoITxjH"
+                clientSecret: "361f3be9e7884af8aefcf893e0de0e9d"
+                oAuthMode: Enums.OAuthModeApp
+
+            }
+        }
+        ServiceAreaTaskParameters {
+                id: taskParameters
+            }
+        ServiceAreaTask {
+            id: serviceAreaTask
+            url: "http://route.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World"
+
+            onSolveStatusChanged: {
+
+                if (solveStatus === Enums.SolveStatusCompleted) {
+
+                    var polygons = solveResult.serviceAreaPolygons.graphics;
+                    for (var index = 0; index < polygons.length; index++) {
+                        var polygon = polygons[index];
+                        polygonFill.color = Qt.rgba(Math.random()%255, Math.random()%255, Math.random()%255, .5);
+                        serviceAreaPolygonGraphic.symbol = polygonFill; // re-randomize the color
+                        var graphic = serviceAreaPolygonGraphic.clone();
+                        graphic.geometry = polygon.geometry;
+                        startGraphics.addGraphic(graphic);
+                    }
+                } else if (solveStatus === Enums.SolveStatusErrored) {
+                    errorMsg = "Solve error:" + solveError.message+ "\nPlease reset and start over.";
+                    messageDialog.visible = true;
+                }
+            }
+        }
+    }
+
+
+
+
+
+
 }
 
-//------------------------------------------------------------------------------
