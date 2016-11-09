@@ -25,10 +25,7 @@ ArcGIS Runtime provides a variety of ways to add **operational layers** to the m
          featureTable: metroLineTable
          visible: true
     }
-    ```
-    
-1.
-  
+    ```  
 1. Compile and run your app. Verify that the map zooms to Washington, D.C., and that a layer of metro lines appears on top of the basemap. 
 
     ![Add Feature Service](05-add-feature-service.png)
