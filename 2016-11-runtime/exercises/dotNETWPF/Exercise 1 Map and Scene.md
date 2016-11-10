@@ -42,7 +42,7 @@ If you need some help, you can refer to [the solution to this exercise](../../so
             HorizontalAlignment="Right" VerticalAlignment="Bottom"
             Margin="0" Width="67" Height="175">
             <StackPanel Margin="0" Width="72" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                <Button x:Name="ViewButton" Width="50" Height="50" Padding="1" Margin="0,5,5,5 HorizontalAlignment="Right" RenderTransformOrigin="4.054,-0.693" Content="{DynamicResource 3D}"/>
+                <Button x:Name="ViewButton" Width="50" Height="50" Padding="1" Margin="0,5,5,5" HorizontalAlignment="Right" RenderTransformOrigin="4.054,-0.693" Content="{DynamicResource 3D}"/>
             </StackPanel>
         </Border>
     ```
