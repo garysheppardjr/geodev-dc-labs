@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 Esri
+ * Copyright 2016-2017 Esri
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 package com.esri.wdc.geodev201611;
 
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
-import com.esri.arcgisruntime.datasource.QueryParameters;
+import com.esri.arcgisruntime.data.QueryParameters;
+import com.esri.arcgisruntime.geometry.GeodesicEllipseParameters;
 import com.esri.arcgisruntime.geometry.Geometry;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
+import com.esri.arcgisruntime.geometry.GeometryType;
+import com.esri.arcgisruntime.geometry.LinearUnit;
+import com.esri.arcgisruntime.geometry.LinearUnitId;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.Polygon;
-import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.layers.Layer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
@@ -29,9 +32,9 @@ import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.LayerList;
+import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.Viewpoint;
-import com.esri.arcgisruntime.mapping.mobilemappackage.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Camera;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
@@ -42,10 +45,10 @@ import com.esri.arcgisruntime.security.UserCredential;
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
-import com.esri.arcgisruntime.tasks.route.RouteParameters;
-import com.esri.arcgisruntime.tasks.route.RouteResult;
-import com.esri.arcgisruntime.tasks.route.RouteTask;
-import com.esri.arcgisruntime.tasks.route.Stop;
+import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
+import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
+import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
+import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
 import com.esri.arcgisruntime.util.ListenableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +68,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * This Application class demonstrates key features of ArcGIS Runtime Quartz.
+ * This Application class demonstrates key features of ArcGIS Runtime 100.0.
  */
 public class WorkshopApp extends Application {
     
@@ -184,14 +187,14 @@ public class WorkshopApp extends Application {
          * in the source code for simplicity. For security reasons, you would not
          * do it this way in a real app. Instead, you would do one of the following:
          * - Use an OAuth 2.0 user login
-         * - Use an OAuth 2.0 app login (not directly supported in ArcGIS Runtime Quartz as of Beta 2)
+         * - Use an OAuth 2.0 app login
          * - Challenge the user for credentials
          */
         // Don't share this code without removing plain text username and password!!!
         theRouteTask.setCredential(new UserCredential("myUsername", "myPassword"));
         RouteParameters theRouteParameters = null;
         try {
-            theRouteParameters = theRouteTask.generateDefaultParametersAsync().get();
+            theRouteParameters = theRouteTask.createDefaultParametersAsync().get();
         } catch (InterruptedException | ExecutionException ex) {
             Logger.getLogger(WorkshopApp.class.getName()).log(Level.SEVERE, null, ex);
             theRouteTask = null;
@@ -287,17 +290,20 @@ public class WorkshopApp extends Application {
                         List<ArcGISMap> maps = mmpk.getMaps();
                         if (0 < maps.size()) {
                             final ArcGISMap thisMap = maps.get(0);
-                            ArrayList<Layer> layers = new ArrayList<>();
-                            layers.addAll(thisMap.getOperationalLayers());
-                            thisMap.getOperationalLayers().clear();
-                            scene.getOperationalLayers().addAll(layers);
-                            sceneView.setViewpoint(thisMap.getInitialViewpoint());
-                            // Rotate the camera
-                            Viewpoint viewpoint = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE);
-                            Point targetPoint = (Point) viewpoint.getTargetGeometry();
-                            Camera camera = sceneView.getCurrentViewpointCamera()
-                                    .rotateAround(targetPoint, 45.0, 65.0, 0.0);
-                            sceneView.setViewpointCameraAsync(camera);
+                            thisMap.addDoneLoadingListener(() -> {
+                                ArrayList<Layer> layers = new ArrayList<>();
+                                layers.addAll(thisMap.getOperationalLayers());
+                                thisMap.getOperationalLayers().clear();
+                                scene.getOperationalLayers().addAll(layers);
+                                sceneView.setViewpoint(thisMap.getInitialViewpoint());
+                                // Rotate the camera
+                                Viewpoint viewpoint = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE);
+                                Point targetPoint = (Point) viewpoint.getTargetGeometry();
+                                Camera camera = sceneView.getCurrentViewpointCamera()
+                                        .rotateAround(targetPoint, 45.0, 65.0, 0.0);
+                                sceneView.setViewpointCameraAsync(camera);
+                            });
+                            thisMap.loadAsync();
                         }
                     });
                     mmpk.loadAsync();
@@ -386,7 +392,7 @@ public class WorkshopApp extends Application {
         if (target instanceof Point) {
             Camera camera = sceneView.getCurrentViewpointCamera()
                     .zoomToward((Point) target, factor);
-            sceneView.setViewpointCameraWithDurationAsync(camera, 0.5f);
+            sceneView.setViewpointCameraAsync(camera, 0.5f);
         } else {
             Logger.getLogger(WorkshopApp.class.getName()).log(Level.WARNING,
                     "SceneView.getCurrentViewpoint returned {0} instead of {1}",
@@ -435,10 +441,15 @@ public class WorkshopApp extends Application {
     private void bufferAndQuery(MouseEvent event) {
         if (MouseButton.PRIMARY.equals(event.getButton()) && event.isStillSincePress()) {
             Point geoPoint = getGeoPoint(event);
-            // Project to meters to do the buffer
-            geoPoint = (Point) GeometryEngine.project(geoPoint, SpatialReference.create(3857));
             // Buffer by 1000 meters
-            Polygon buffer = GeometryEngine.buffer(geoPoint, 1000.0);
+            GeodesicEllipseParameters params = new GeodesicEllipseParameters();
+            params.setCenter(geoPoint);
+            params.setGeometryType(GeometryType.POLYGON);
+            params.setLinearUnit(new LinearUnit(LinearUnitId.METERS));
+            params.setMaxPointCount(1000);
+            params.setMaxSegmentLength(1.0);
+            params.setSemiAxis1Length(1000.0);
+            Polygon buffer = (Polygon) GeometryEngine.ellipseGeodesic(params);
 
             // Show click and buffer as graphics
             ListenableList<Graphic> graphics =
@@ -457,12 +468,6 @@ public class WorkshopApp extends Application {
             operationalLayers.parallelStream().filter(
                     layer -> layer instanceof FeatureLayer
             ).forEach(layer -> {
-                /**
-                 * Note: As of ArcGIS Runtime Quartz Beta 2, this select successfully
-                 * selects features, but those features are only highlighted on the
-                 * 2D MapView, not on the 3D SceneView. This behavior is scheduled
-                 * to be fixed in ArcGIS Runtime Quartz.
-                 */
                 ((FeatureLayer) layer).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
             });
         }
@@ -507,7 +512,7 @@ public class WorkshopApp extends Application {
                 for (Point p : new Point[]{ originPoint, point }) {
                     routeParameters.getStops().add(new Stop(p));
                 }
-                ListenableFuture<RouteResult> solveFuture = routeTask.solveAsync(routeParameters);
+                ListenableFuture<RouteResult> solveFuture = routeTask.solveRouteAsync(routeParameters);
                 solveFuture.addDoneListener(() -> {
                     try {
                         RouteResult routeResult = solveFuture.get();

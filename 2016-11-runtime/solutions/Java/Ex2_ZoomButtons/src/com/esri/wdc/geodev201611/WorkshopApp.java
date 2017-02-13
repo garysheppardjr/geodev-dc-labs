@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 Esri
+ * Copyright 2016-2017 Esri
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * This Application class demonstrates key features of ArcGIS Runtime Quartz.
+ * This Application class demonstrates key features of ArcGIS Runtime 100.0.
  */
 public class WorkshopApp extends Application {
     
@@ -196,7 +196,7 @@ public class WorkshopApp extends Application {
         if (target instanceof Point) {
             Camera camera = sceneView.getCurrentViewpointCamera()
                     .zoomToward((Point) target, factor);
-            sceneView.setViewpointCameraWithDurationAsync(camera, 0.5f);
+            sceneView.setViewpointCameraAsync(camera, 0.5f);
         } else {
             Logger.getLogger(WorkshopApp.class.getName()).log(Level.WARNING,
                     "SceneView.getCurrentViewpoint returned {0} instead of {1}",
