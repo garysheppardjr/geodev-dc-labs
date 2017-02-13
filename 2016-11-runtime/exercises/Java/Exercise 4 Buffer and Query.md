@@ -130,12 +130,19 @@ You need to buffer the clicked point and display both the point and the buffer a
     }
     ```
 
-1. In `bufferAndQuery(MouseEvent)`, you need to replace your `println` with code to create a buffer and display the point and buffer as graphics. First, use `getGeoPoint(MouseEvent)` to convert the `MouseEvent` to a geographic point. Next, create a 1000-meter buffer, which is pretty simple with ArcGIS Runtime's `GeometryEngine` class. _Note: ArcGIS Runtime Quartz Beta 2 cannot create geodesic buffers, so here you must project the point to a projected coordinate system (PCS), such as Web Mercator (3857), before creating the buffer. Using a PCS specific to the geographic area in question would produce a more accurate buffer. However, it is anticipated that ArcGIS Runtime Quartz will provide support for geodesic buffers, so writing code to find a better PCS will not be necessary with the Quartz release. Therefore, we did not write that code for this tutorial._
+1. In `bufferAndQuery(MouseEvent)`, you need to replace your `println` with code to create a buffer and display the point and buffer as graphics. First, use `getGeoPoint(MouseEvent)` to convert the `MouseEvent` to a geographic point. Next, create a 1000-meter buffer, using `GeometryEngine.ellipseGeodesic(GeodesicEllipseParams)` as follows:
 
     ```
     Point geoPoint = getGeoPoint(event);
-    geoPoint = (Point) GeometryEngine.project(geoPoint, SpatialReference.create(3857));
-    Polygon buffer = GeometryEngine.buffer(geoPoint, 1000.0);
+    // Buffer by 1000 meters
+    GeodesicEllipseParameters params = new GeodesicEllipseParameters();
+    params.setCenter(geoPoint);
+    params.setGeometryType(GeometryType.POLYGON);
+    params.setLinearUnit(new LinearUnit(LinearUnitId.METERS));
+    params.setMaxPointCount(1000);
+    params.setMaxSegmentLength(1.0);
+    params.setSemiAxis1Length(1000.0);
+    Polygon buffer = (Polygon) GeometryEngine.ellipseGeodesic(params);
     ```
 
 1. In `bufferAndQuery(MouseEvent)`, add the point and buffer as graphics. You only need to add them to the `GraphicsOverlay` for the `GeoView` currently in use--`MapView` or `SceneView`--so check the value of `threeD` and choose a `GraphicsOverlay` accordingly. Clear its graphics and then add the point and buffer as new `Graphic` objects:
@@ -164,7 +171,7 @@ There are a few different ways to query and/or select features in ArcGIS Runtime
     query.setGeometry(buffer);
     ```
     
-1. For each of the `FeatureLayer` objects in the operational layers of the `SceneView`'s scene or the `MapView`'s map, call `selectFeaturesAsync(QueryParameters, FeatureLayer.SelectionMode)`. Use `FeatureLayer.SelectionMode.NEW` to do a new selection, as opposed to adding to or removing from the current selection. _Note: ArcGIS Runtime Quartz Beta 2 highlights selected features on the map but not on the scene. It is anticipated that this behavior will be fixed in the ArcGIS Runtime Quartz release._ Add this code after instantiating the query object and setting its geometry:
+1. For each of the `FeatureLayer` objects in the operational layers of the `SceneView`'s scene or the `MapView`'s map, call `selectFeaturesAsync(QueryParameters, FeatureLayer.SelectionMode)`. Use `FeatureLayer.SelectionMode.NEW` to do a new selection, as opposed to adding to or removing from the current selection. Add this code after instantiating the query object and setting its geometry:
 
     ```
     LayerList operationalLayers = threeD ?
@@ -191,5 +198,5 @@ Ready for more? Choose from the following:
 
 - [**Exercise 5: Routing**](Exercise 5 Routing.md)
 - **Bonus**
-    - We selected features but didn't do anything with the selected features' attributes. The call to [`selectFeaturesAsync`](https://developers.arcgis.com/java/beta/api-reference//reference/com/esri/arcgisruntime/layers/FeatureLayer.html#selectFeaturesAsync(com.esri.arcgisruntime.datasource.QueryParameters, com.esri.arcgisruntime.layers.FeatureLayer.SelectionMode)) returns a Java `Future` with a `get()` method that returns a `FeatureQueryResult`, which lets you iterate through selected features. See if you can look at the feature attributes to get more information about the selected features.
+    - We selected features but didn't do anything with the selected features' attributes. The call to [`selectFeaturesAsync`](https://developers.arcgis.com/java/latest/api-reference//reference/com/esri/arcgisruntime/layers/FeatureLayer.html#selectFeaturesAsync(com.esri.arcgisruntime.data.QueryParameters, com.esri.arcgisruntime.layers.FeatureLayer.SelectionMode)) returns a Java `Future` with a `get()` method that returns a `FeatureQueryResult`, which lets you iterate through selected features. See if you can look at the feature attributes to get more information about the selected features.
     - Try setting properties on the `QueryParameters` object to change the query's behavior. For example, maybe you want to select all features that are _outside_ the buffer instead of those that are inside. How would you do that by adding just one line of code? What other interesting things can you do with `QueryParameters`?

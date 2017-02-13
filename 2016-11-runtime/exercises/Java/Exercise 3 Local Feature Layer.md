@@ -68,20 +68,22 @@ A layer can only reside in one map or scene at a time. Therefore, to add layers 
     mmpk.loadAsync();
     ```
     
-1. Get the first `Map` in the `MobileMapPackage`, as you did before for the 2D map. However, you cannot add a `Map` to a `SceneView`, so you will instead add the `Map`'s layers to the `Scene`'s operational layers. But a layer can only belong to one `Map` or `Scene` at a time, so you must make a list of the layers, clear the `Map`'s layer list (bonus: see what happens if you don't!), and only then add the list of layers to the scene. Here is the code for adding the MMPK's layers to your `Scene`. Put this code in the done loading listener you created in the previous step:
+1. Get the first `Map` in the `MobileMapPackage`, as you did before for the 2D map. However, you cannot add a `Map` to a `SceneView`, so you will instead add the `Map`'s layers to the `Scene`'s operational layers. But a layer can only belong to one `Map` or `Scene` at a time, so you must load the map, make a list of the layers, clear the `Map`'s layer list (bonus: see what happens if you don't!), and only then add the list of layers to the scene. Here is the code for adding the MMPK's layers to your `Scene`. Put this code in the done loading listener you created in the previous step:
 
     ```
     List<ArcGISMap> maps = mmpk.getMaps();
     if (0 < maps.size()) {
         final ArcGISMap thisMap = maps.get(0);
-        ArrayList<Layer> layers = new ArrayList<>();
-        layers.addAll(thisMap.getOperationalLayers());
-        thisMap.getOperationalLayers().clear();
-        scene.getOperationalLayers().addAll(layers);
+        thisMap.addDoneLoadingListener(() -> {
+            ArrayList<Layer> layers = new ArrayList<>();
+            layers.addAll(thisMap.getOperationalLayers());
+            thisMap.getOperationalLayers().clear();
+            scene.getOperationalLayers().addAll(layers);
+        });
     }
     ```
     
-1. After adding the layers to the scene (inside the `if` block from the previous step), zoom to the layer you added by giving your `SceneView` the MMPK map's `Viewpoint`:
+1. After adding the layers to the scene (inside the lambda code block from the previous step), zoom to the layer you added by giving your `SceneView` the MMPK map's `Viewpoint`:
 
     ```
     sceneView.setViewpoint(thisMap.getInitialViewpoint());
@@ -114,4 +116,4 @@ If you completed the exercise, congratulations! You learned how to add a local f
 Ready for more? Choose from the following:
 
 - [**Exercise 4: Buffer a Point and Query Features**](Exercise 4 Buffer and Query.md)
-- **Bonus**: we used a mobile map package, but you can also add **feature services** to your map and scene. Go to [ArcGIS Online](http://www.arcgis.com/home/index.html), find a feature service URL (hint: a feature service URL has the term `FeatureServer` at or near the end of the URL), and use the [`FeatureLayer`](https://developers.arcgis.com/java/beta/api-reference/reference/com/esri/arcgisruntime/layers/FeatureLayer.html) and [`ServiceFeatureTable`](https://developers.arcgis.com/java/beta/api-reference/reference/com/esri/arcgisruntime/datasource/arcgis/ServiceFeatureTable.html) classes to add the feature service to your map and/or globe. You can refer to a [code sample](https://developers.arcgis.com/java/beta/sample-code/feature-layer-feature-service.htm) if you need it. Also, the [`ServiceFeatureTable`](https://developers.arcgis.com/java/beta/api-reference/reference/com/esri/arcgisruntime/datasource/arcgis/ServiceFeatureTable.html) documentation has a feature service URL in the Class Overview section that you can use instead of finding one in ArcGIS Online if desired. We could give that URL to you here, but that wouldn't force you to go look at the documentation, would it? :-)
+- **Bonus**: we used a mobile map package, but you can also add **feature services** to your map and scene. Go to [ArcGIS Online](http://www.arcgis.com/home/index.html), find a feature service URL (hint: a feature service URL has the term `FeatureServer` at or near the end of the URL), and use the [`FeatureLayer`](https://developers.arcgis.com/java/latest/api-reference/reference/com/esri/arcgisruntime/layers/FeatureLayer.html) and [`ServiceFeatureTable`](https://developers.arcgis.com/java/latest/api-reference/reference/com/esri/arcgisruntime/data/ServiceFeatureTable.html) classes to add the feature service to your map and/or globe. You can refer to a [code sample](https://developers.arcgis.com/java/latest/sample-code/feature-layer-feature-service.htm) if you need it. Also, the [`ServiceFeatureTable`](https://developers.arcgis.com/java/latest/api-reference/reference/com/esri/arcgisruntime/data/ServiceFeatureTable.html) documentation has a feature service URL in the Class Overview section that you can use instead of finding one in ArcGIS Online if desired. We could give that URL to you here, but that wouldn't force you to go look at the documentation, would it? :-)

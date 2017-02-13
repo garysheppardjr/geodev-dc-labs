@@ -96,7 +96,7 @@ If you need some help, you can refer to [the solution to this exercise](../../so
     if (target instanceof Point) {
         Camera camera = sceneView.getCurrentViewpointCamera()
                 .zoomToward((Point) target, factor);
-        sceneView.setViewpointCameraWithDurationAsync(camera, 0.5f);
+        sceneView.setViewpointCameraAsync(camera, 0.5f);
     } else {
         // This shouldn't happen, but in case it does...
         Logger.getLogger(WorkshopApp.class.getName()).log(Level.WARNING,

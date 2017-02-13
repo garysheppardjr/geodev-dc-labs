@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 Esri
+ * Copyright 2016-2017 Esri
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.Viewpoint;
-import com.esri.arcgisruntime.mapping.mobilemappackage.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Camera;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.SceneView;
@@ -41,7 +41,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * This Application class demonstrates key features of ArcGIS Runtime Quartz.
+ * This Application class demonstrates key features of ArcGIS Runtime 100.0.
  */
 public class WorkshopApp extends Application {
     
@@ -173,17 +173,20 @@ public class WorkshopApp extends Application {
                         List<ArcGISMap> maps = mmpk.getMaps();
                         if (0 < maps.size()) {
                             final ArcGISMap thisMap = maps.get(0);
-                            ArrayList<Layer> layers = new ArrayList<>();
-                            layers.addAll(thisMap.getOperationalLayers());
-                            thisMap.getOperationalLayers().clear();
-                            scene.getOperationalLayers().addAll(layers);
-                            sceneView.setViewpoint(thisMap.getInitialViewpoint());
-                            // Rotate the camera
-                            Viewpoint viewpoint = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE);
-                            Point targetPoint = (Point) viewpoint.getTargetGeometry();
-                            Camera camera = sceneView.getCurrentViewpointCamera()
-                                    .rotateAround(targetPoint, 45.0, 65.0, 0.0);
-                            sceneView.setViewpointCameraAsync(camera);
+                            thisMap.addDoneLoadingListener(() -> {
+                                ArrayList<Layer> layers = new ArrayList<>();
+                                layers.addAll(thisMap.getOperationalLayers());
+                                thisMap.getOperationalLayers().clear();
+                                scene.getOperationalLayers().addAll(layers);
+                                sceneView.setViewpoint(thisMap.getInitialViewpoint());
+                                // Rotate the camera
+                                Viewpoint viewpoint = sceneView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE);
+                                Point targetPoint = (Point) viewpoint.getTargetGeometry();
+                                Camera camera = sceneView.getCurrentViewpointCamera()
+                                        .rotateAround(targetPoint, 45.0, 65.0, 0.0);
+                                sceneView.setViewpointCameraAsync(camera);
+                            });
+                            thisMap.loadAsync();
                         }
                     });
                     mmpk.loadAsync();
@@ -245,7 +248,7 @@ public class WorkshopApp extends Application {
         if (target instanceof Point) {
             Camera camera = sceneView.getCurrentViewpointCamera()
                     .zoomToward((Point) target, factor);
-            sceneView.setViewpointCameraWithDurationAsync(camera, 0.5f);
+            sceneView.setViewpointCameraAsync(camera, 0.5f);
         } else {
             Logger.getLogger(WorkshopApp.class.getName()).log(Level.WARNING,
                     "SceneView.getCurrentViewpoint returned {0} instead of {1}",
