@@ -9,7 +9,7 @@ This exercise walks you through the following:
 Prerequisites:
 
 - Install Visual Studio 2015 
-- [Install ArcGIS Runtime SDK for .NET (Version 100.1.0)](https://developers.arcgis.com/net/quartz/])
+- [Install ArcGIS Runtime SDK for .NET (Version 100.2.0)](https://developers.arcgis.com/net/latest/)
 
 If you need some help, you can refer to [the solution to this exercise](../../solutions/dotNETWPF/Ex1_MapAndScene), available in this repository.
 
@@ -109,7 +109,7 @@ ArcGIS Runtime also supports 3D visualization. Everyone loves 3D! To conclude th
     private bool threeD = false;
     ```
     
-11. In MainWindow.xaml we need to add a click event to the button to toggle to a 3D view.  Visual Studio will create the for you when start typeing the Click= and you can tab to have the event handler created automatically. 
+11. In MainWindow.xaml we need to add a click event to the button to toggle to a 3D view.  Visual Studio will create the for you when start typing the Click= and you can tab to have the event handler created automatically. 
 
     ```
     <Button x:Name="ViewButton" Click="ViewButton_Click"  Width="50" Height="50" Padding="1" Margin="0,5,5,5" HorizontalAlignment="Right" RenderTransformOrigin="4.054,-0.693" Content="{DynamicResource 3D}"/>
@@ -120,7 +120,7 @@ ArcGIS Runtime also supports 3D visualization. Everyone loves 3D! To conclude th
      {
      }
      ```
-12. Next let's add the code to change the image on the button and toogle the the threeD variable to be true or false:
+12. Next let's add the code to change the image on the button and toggle the threeD variable to be true or false:
     ```
     private void ViewButton_Click(object sender, RoutedEventArgs e)
     {
