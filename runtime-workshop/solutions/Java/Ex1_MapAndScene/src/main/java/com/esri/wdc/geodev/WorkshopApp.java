@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016-2017 Esri
+ * Copyright 2016-2019 Esri
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * This Application class demonstrates key features of ArcGIS Runtime 100.0.
+ * This Application class demonstrates key features of ArcGIS Runtime.
  */
 public class WorkshopApp extends Application {
     
